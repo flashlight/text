@@ -7,8 +7,8 @@ LICENSE file in the root directory of this source tree.
 """
 
 from .flashlight_lib_text_dictionary import (
-    Dictionary,
     create_word_dict,
+    Dictionary,
     load_words,
     pack_replabels,
     unpack_replabels,

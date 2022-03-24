@@ -4,19 +4,43 @@ include(ExternalProject)
 
 set(gtest_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/googletest/src/googletest/googletest/include)
 set(gtest_URL https://github.com/google/googletest.git)
-set(gtest_BUILD ${CMAKE_CURRENT_BINARY_DIR}/googletest/)
-set(gtest_TAG 703bd9caab50b139428cea1aaff9974ebee5742e) # release 1.10.0
+set(gtest_BUILD ${CMAKE_CURRENT_BINARY_DIR}/third-party/googletest)
+set(gtest_TAG release-1.11.0)
+set(gtest_BINARY_DIR ${gtest_BUILD}/src/gtest-build)
+
+if (BUILD_SHARED_LIBS)
+  set(LIB_TYPE SHARED)
+else()
+  set(LIB_TYPE STATIC)
+endif()
+
+# Built asset paths
+set(GTEST_LIBRARIES
+  "${gtest_BINARY_DIR}/lib/${CMAKE_${LIB_TYPE}_LIBRARY_PREFIX}gtest${CMAKE_${LIB_TYPE}_LIBRARY_SUFFIX}"
+)
+set(GTEST_LIBRARIES_MAIN
+  "${gtest_BINARY_DIR}/lib/${CMAKE_${LIB_TYPE}_LIBRARY_PREFIX}gtest_main${CMAKE_${LIB_TYPE}_LIBRARY_SUFFIX}"
+)
+set(GMOCK_LIBRARIES
+  "${gtest_BINARY_DIR}/lib/${CMAKE_${LIB_TYPE}_LIBRARY_PREFIX}gmock${CMAKE_${LIB_TYPE}_LIBRARY_SUFFIX}"
+)
+set(GMOCK_LIBRARIES_MAIN
+  "${gtest_BINARY_DIR}/lib/${CMAKE_${LIB_TYPE}_LIBRARY_PREFIX}gmock_main${CMAKE_${LIB_TYPE}_LIBRARY_SUFFIX}"
+)
 
 if (NOT TARGET gtest)
   # Download googletest
   ExternalProject_Add(
     gtest
-    PREFIX googletest
+    PREFIX ${gtest_BUILD}
     GIT_REPOSITORY ${gtest_URL}
     GIT_TAG ${gtest_TAG}
-    BUILD_IN_SOURCE 1
-    BUILD_COMMAND ${CMAKE_COMMAND} --build .
     INSTALL_COMMAND ""
+    BUILD_BYPRODUCTS
+      ${GTEST_LIBRARIES}
+      ${GTEST_LIBRARIES_MAIN}
+      ${GMOCK_LIBRARIES}
+      ${GMOCK_LIBRARIES_MAIN}
     CMAKE_CACHE_ARGS
       -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
       -DCMAKE_BUILD_TYPE:STRING=Release
@@ -28,28 +52,6 @@ endif ()
 
 ExternalProject_Get_Property(gtest source_dir)
 set(GTEST_SOURCE_DIR ${source_dir})
-ExternalProject_Get_Property(gtest binary_dir)
-set(GTEST_BINARY_DIR ${binary_dir})
-
-if (BUILD_SHARED_LIBS)
-  set(LIB_TYPE SHARED)
-else()
-  set(LIB_TYPE STATIC)
-endif()
-
-# Library and include dirs
-set(GTEST_LIBRARIES
-  "${GTEST_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/${CMAKE_${LIB_TYPE}_LIBRARY_PREFIX}gtest${CMAKE_${LIB_TYPE}_LIBRARY_SUFFIX}"
-)
-set(GTEST_LIBRARIES_MAIN
-  "${GTEST_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/${CMAKE_${LIB_TYPE}_LIBRARY_PREFIX}gtest_main${CMAKE_${LIB_TYPE}_LIBRARY_SUFFIX}"
-)
-set(GMOCK_LIBRARIES
-  "${GTEST_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/${CMAKE_${LIB_TYPE}_LIBRARY_PREFIX}gmock${CMAKE_${LIB_TYPE}_LIBRARY_SUFFIX}"
-)
-set(GMOCK_LIBRARIES_MAIN
-  "${GTEST_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/${CMAKE_${LIB_TYPE}_LIBRARY_PREFIX}gmock_main${CMAKE_${LIB_TYPE}_LIBRARY_SUFFIX}"
-)
 
 set(GTEST_INCLUDE_DIRS ${GTEST_SOURCE_DIR}/googletest/include)
 set(GMOCK_INCLUDE_DIRS ${GTEST_SOURCE_DIR}/googlemock/include)

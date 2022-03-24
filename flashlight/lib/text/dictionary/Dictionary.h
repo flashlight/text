@@ -26,6 +26,8 @@ class Dictionary {
 
   explicit Dictionary(const std::string& filename);
 
+  explicit Dictionary(const std::vector<std::string>& tkns);
+
   size_t entrySize() const;
 
   size_t indexSize() const;
@@ -60,7 +62,8 @@ class Dictionary {
   int defaultIndex_ = -1;
 };
 
-typedef std::unordered_map<int, Dictionary> DictionaryMap;
+using DictionaryMap = std::unordered_map<int, Dictionary>;
+
 } // namespace text
 } // namespace lib
 } // namespace fl

@@ -7,7 +7,6 @@
 #  KENLM_FOUND
 #  KENLM_LIBRARIES
 #  KENLM_INCLUDE_DIRS
-#  KENLM_INCLUDE_DIRS_LM
 #
 
 message(STATUS "Looking for KenLM")
@@ -75,16 +74,19 @@ else()
   message(STATUS "kenlm model.hh not found; if you already have kenlm installed, please set CMAKE_INCLUDE_PATH, KENLM_MODEL_HEADER or KENLM_ROOT environment variable")
 endif()
 
-set(KENLM_LIBRARIES
-  ${KENLM_LIB}
-  ${KENLM_UTIL_LIB}
+set(COMPRESSION_LIBS
   ${LIBLZMA_LIBRARIES}
   ${BZIP2_LIBRARIES}
   ${ZLIB_LIBRARIES}
-)
+  )
+
+set(KENLM_LIBRARIES
+  ${KENLM_LIB}
+  ${KENLM_UTIL_LIB}
+  ${COMPRESSION_LIBRARIES}
+  )
 # Some KenLM include paths are relative to [include dir]/kenlm, not just [include dir] (bad)
-set(KENLM_INCLUDE_DIRS_LM ${KENLM_INCLUDE_LM})
-set(KENLM_INCLUDE_DIRS ${KENLM_INCLUDE_DIR})
+set(KENLM_INCLUDE_DIRS "${KENLM_INCLUDE_DIR};${KENLM_INCLUDE_LM}")
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(kenlm DEFAULT_MSG KENLM_INCLUDE_DIRS KENLM_LIBRARIES)
@@ -92,4 +94,23 @@ find_package_handle_standard_args(kenlm DEFAULT_MSG KENLM_INCLUDE_DIRS KENLM_LIB
 if (kenlm_FOUND)
   message(STATUS "Found kenlm (include: ${KENLM_INCLUDE_DIRS}, library: ${KENLM_LIBRARIES})")
   mark_as_advanced(KENLM_ROOT KENLM_INCLUDE_DIRS KENLM_LIBRARIES)
+
+  if (BUILD_SHARED_LIBS)
+    set(LIB_TYPE SHARED)
+  else()
+    set(LIB_TYPE STATIC)
+  endif()
+
+  if (NOT TARGET kenlm::kenlm)
+    add_library(kenlm::kenlm ${LIB_TYPE} IMPORTED)
+    set_property(TARGET kenlm::kenlm PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${KENLM_INCLUDE_DIRS})
+    set_property(TARGET kenlm::kenlm PROPERTY IMPORTED_LOCATION ${KENLM_LIB})
+  endif()
+
+  if (NOT TARGET kenlm::kenlm_util)
+    add_library(kenlm::kenlm_util ${LIB_TYPE} IMPORTED)
+    set_property(TARGET kenlm::kenlm_util PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${KENLM_INCLUDE_DIRS})
+    set_property(TARGET kenlm::kenlm_util PROPERTY IMPORTED_LOCATION ${KENLM_UTIL_LIB})
+    set_property(TARGET kenlm::kenlm_util PROPERTY IMPORTED_LINK_INTERFACE_LIBRARIES ${COMPRESSION_LIBS})
+  endif()
 endif()

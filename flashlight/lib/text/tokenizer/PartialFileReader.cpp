@@ -5,6 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <stdexcept>
+
+#include "flashlight/lib/text/String.h"
 #include "flashlight/lib/text/tokenizer/PartialFileReader.h"
 
 namespace fl {
@@ -22,7 +25,10 @@ PartialFileReader::PartialFileReader(int rank, int totalReaders)
 
 void PartialFileReader::loadFile(const std::string& filename) {
   stream_.close();
-  stream_ = createInputStream(filename);
+  stream_ = std::ifstream(filename);
+  if (!stream_) {
+    throw std::runtime_error("PartialFileReader cannot load file " + filename);
+  }
   stream_.seekg(0, stream_.end);
   const size_t fileSize = stream_.tellg();
 

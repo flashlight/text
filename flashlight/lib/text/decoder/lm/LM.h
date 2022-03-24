@@ -46,7 +46,7 @@ struct LMState {
     } else {
       return 1;
     }
-  };
+  }
 };
 
 /**
@@ -75,7 +75,7 @@ class LM {
   virtual std::pair<LMStatePtr, float> finish(const LMStatePtr& state) = 0;
 
   /* Update LM caches (optional) given a bunch of new states generated */
-  virtual void updateCache(std::vector<LMStatePtr> stateIdices) {}
+  virtual void updateCache(std::vector<LMStatePtr>) {}
 
   virtual ~LM() = default;
 

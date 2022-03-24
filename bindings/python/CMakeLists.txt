@@ -1,14 +1,12 @@
 cmake_minimum_required(VERSION 3.10)
 
+if (NOT BUILD_SHARED_LIBS)
+  message(FATAL_ERROR "Cannot build Python bindings with a static lib build: "
+    "set BUILD_SHARED_LIBS to ON.")
+endif()
+
 include(${CMAKE_MODULE_PATH}/Buildpybind11.cmake)
 include(${CMAKE_MODULE_PATH}/pybind11Tools.cmake)
-
-set_target_properties(
-  fl_lib_text
-  PROPERTIES
-  INTERFACE_POSITION_INDEPENDENT_CODE
-  TRUE
-  )
 
 function (add_pybind11_extension ext_name)
   string(REPLACE "_" ";" modlist ${ext_name})
@@ -28,19 +26,21 @@ function (add_pybind11_extension ext_name)
   target_link_libraries(
     ${ext_name}
     PUBLIC
-    fl_lib_text
-    fl_lib_audio
-    fl_lib_sequence
-    fl_lib_common
+    flashlight-text
+    )
+
+  target_include_directories(
+    ${ext_name}
+    PRIVATE
+    ${PROJECT_SOURCE_DIR}
     )
 
   add_dependencies(${ext_name} pybind11)
-  set_target_properties(${ext_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${relpath})
+  if (CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+    set_target_properties(${ext_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${relpath})
+  endif()
   set_target_properties(${ext_name} PROPERTIES OUTPUT_NAME ${ext_name})
-
 endfunction ()
 
-add_pybind11_extension(flashlight_lib_audio_feature)
-add_pybind11_extension(flashlight_lib_sequence_criterion)
 add_pybind11_extension(flashlight_lib_text_decoder)
 add_pybind11_extension(flashlight_lib_text_dictionary)

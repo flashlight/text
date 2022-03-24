@@ -47,6 +47,16 @@ std::vector<int> unpackReplabels(
     const std::vector<int>& tokens,
     const Dictionary& dict,
     int maxReps);
+
+/**
+ * Map the spelling of a word to letter indices as defined by a Dictionary
+ * with a maximum number of replabels as defined.
+ */
+std::vector<int> tkn2Idx(
+    const std::vector<std::string>& spelling,
+    const fl::lib::text::Dictionary& tokenDict,
+    int maxReps);
+
 } // namespace text
 } // namespace lib
 } // namespace fl

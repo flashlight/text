@@ -11,9 +11,9 @@
 #include "flashlight/lib/text/decoder/LexiconDecoder.h"
 #include "flashlight/lib/text/decoder/LexiconFreeDecoder.h"
 
-#ifdef FL_LIBRARIES_USE_KENLM
+#if FL_TEXT_USE_KENLM
 #include "flashlight/lib/text/decoder/lm/KenLM.h"
-#endif // FL_LIBRARIES_USE_KENLM
+#endif // FL_TEXT_USE_KENLM
 
 namespace py = pybind11;
 using namespace fl::lib::text;
@@ -163,7 +163,7 @@ PYBIND11_MODULE(flashlight_lib_text_decoder, m) {
       .def("compare", &LMState::compare, "state"_a)
       .def("child", &LMState::child<LMState>, "usr_index"_a);
 
-#ifdef FL_LIBRARIES_USE_KENLM
+#if FL_TEXT_USE_KENLM
   py::class_<KenLM, KenLMPtr, LM>(m, "KenLM")
       .def(
           py::init<const std::string&, const Dictionary&>(),
@@ -224,12 +224,15 @@ PYBIND11_MODULE(flashlight_lib_text_decoder, m) {
           "log_add"_a,
           "criterion_type"_a)
       .def_readwrite("beam_size", &LexiconFreeDecoderOptions::beamSize)
-      .def_readwrite("beam_size_token", &LexiconFreeDecoderOptions::beamSizeToken)
-      .def_readwrite("beam_threshold", &LexiconFreeDecoderOptions::beamThreshold)
+      .def_readwrite(
+          "beam_size_token", &LexiconFreeDecoderOptions::beamSizeToken)
+      .def_readwrite(
+          "beam_threshold", &LexiconFreeDecoderOptions::beamThreshold)
       .def_readwrite("lm_weight", &LexiconFreeDecoderOptions::lmWeight)
       .def_readwrite("sil_score", &LexiconFreeDecoderOptions::silScore)
       .def_readwrite("log_add", &LexiconFreeDecoderOptions::logAdd)
-      .def_readwrite("criterion_type", &LexiconFreeDecoderOptions::criterionType);
+      .def_readwrite(
+          "criterion_type", &LexiconFreeDecoderOptions::criterionType);
 
   py::class_<DecodeResult>(m, "DecodeResult")
       .def(py::init<int>(), "length"_a)

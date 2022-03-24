@@ -10,13 +10,12 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "flashlight/lib/common/System.h"
 #include "flashlight/lib/text/dictionary/Utils.h"
+#include "flashlight/lib/text/test/Filesystem.h"
 
-using fl::lib::pathsConcat;
 using namespace fl::lib::text;
 
-std::string loadPath = "";
+fs::path loadPath = "";
 
 TEST(DictionaryTest, TestBasic) {
   Dictionary dict;
@@ -46,7 +45,7 @@ TEST(DictionaryTest, TestBasic) {
 TEST(DictionaryTest, FromFile) {
   ASSERT_THROW(Dictionary("not_a_real_file"), std::runtime_error);
 
-  Dictionary dict(pathsConcat(loadPath, "test.dict"));
+  Dictionary dict(loadPath / "test.dict");
   ASSERT_EQ(dict.entrySize(), 10);
   ASSERT_EQ(dict.indexSize(), 7);
   ASSERT_TRUE(dict.contains("a"));
@@ -172,7 +171,7 @@ TEST(DictionaryTest, UT8Split) {
   std::string in3 = "Beyoncé";
   auto in3Tkns = splitWrd(in3);
   std::vector<std::string> in3TknsExp = {
-      "B", "e", "y", "o", "n", "c", "e", u8"\u0301"};
+      "B", "e", "y", "o", "n", "c", "e", "\u0301"};
   ASSERT_EQ(in3Tkns.size(), 8);
   for (int i = 0; i < in3Tkns.size(); ++i) {
     ASSERT_EQ(in3TknsExp[i], in3Tkns[i]);

@@ -9,7 +9,11 @@
 
 #include <stdexcept>
 
+#ifdef USE_KENLM_FROM_LANGTECH
+#include "language_technology/jedi/lm/model.hh"
+#else
 #include <kenlm/lm/model.hh>
+#endif
 
 namespace fl {
 namespace lib {
