@@ -7,10 +7,9 @@
 
 #pragma once
 
+#include <fstream>
+#include <string>
 #include <vector>
-
-#include "flashlight/lib/common/String.h"
-#include "flashlight/lib/common/System.h"
 
 namespace fl {
 namespace lib {

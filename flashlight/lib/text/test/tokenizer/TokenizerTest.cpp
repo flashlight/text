@@ -10,31 +10,34 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "flashlight/lib/text/String.h"
+#include "flashlight/lib/text/test/Filesystem.h"
 #include "flashlight/lib/text/tokenizer/PartialFileReader.h"
 #include "flashlight/lib/text/tokenizer/Tokenizer.h"
 
-std::string loadPath = "";
+fs::path loadPath;
 
 TEST(PartialFileReaderTest, Reading) {
   fl::lib::text::PartialFileReader subFile1(0, 2);
   fl::lib::text::PartialFileReader subFile2(1, 2);
 
-  subFile1.loadFile(fl::lib::pathsConcat(loadPath, "test.txt"));
-  subFile2.loadFile(fl::lib::pathsConcat(loadPath, "test.txt"));
+  subFile1.loadFile(loadPath / "test.txt");
+  subFile2.loadFile(loadPath / "test.txt");
 
-  std::vector<std::string> target = {"this",
-                                     "is",
-                                     "a",
-                                     "test",
-                                     "just",
-                                     "a",
-                                     "test",
-                                     "for",
-                                     "our",
-                                     "perfect",
-                                     "tokenizer",
-                                     "and",
-                                     "splitter"};
+  std::vector<std::string> target = {
+      "this",
+      "is",
+      "a",
+      "test",
+      "just",
+      "a",
+      "test",
+      "for",
+      "our",
+      "perfect",
+      "tokenizer",
+      "and",
+      "splitter"};
 
   std::vector<std::string> loadedWords;
   while (subFile1.hasNextLine()) {
@@ -56,7 +59,7 @@ TEST(PartialFileReaderTest, Reading) {
 
 TEST(TokenizerTest, Counting) {
   auto tokenizer = fl::lib::text::Tokenizer();
-  tokenizer.countTokens(fl::lib::pathsConcat(loadPath, "test.txt"), 2);
+  tokenizer.countTokens(loadPath /"test.txt", 2);
   ASSERT_EQ(tokenizer.totalTokens(), 13);
   ASSERT_EQ(tokenizer.totalSentences(), 4);
 
@@ -64,7 +67,6 @@ TEST(TokenizerTest, Counting) {
   auto dict = tokenizer.getDictionary();
   ASSERT_EQ(dict.size(), 2);
 }
-
 
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);

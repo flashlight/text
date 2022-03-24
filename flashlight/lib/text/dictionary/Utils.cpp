@@ -5,10 +5,12 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include "flashlight/lib/text/dictionary/Utils.h"
-#include "flashlight/lib/common/String.h"
-#include "flashlight/lib/common/System.h"
+#include <fstream>
+#include <stdexcept>
+
+#include "flashlight/lib/text/String.h"
 #include "flashlight/lib/text/dictionary/Defines.h"
+#include "flashlight/lib/text/dictionary/Utils.h"
 
 namespace fl {
 namespace lib {
@@ -27,7 +29,11 @@ LexiconMap loadWords(const std::string& filename, int maxWords) {
   LexiconMap lexicon;
 
   std::string line;
-  std::ifstream infile = createInputStream(filename);
+  std::ifstream infile = std::ifstream(filename);
+  if (!infile) {
+    throw std::invalid_argument(
+        "text::loadWords - can't open file " + filename);
+  }
 
   // Add at most `maxWords` words into the lexicon.
   // If `maxWords` is negative then no limit is applied.
@@ -142,6 +148,19 @@ std::vector<int> unpackReplabels(
   }
   return result;
 }
+
+std::vector<int> tkn2Idx(
+    const std::vector<std::string>& spelling,
+    const Dictionary& tokenDict,
+    int maxReps) {
+  std::vector<int> ret;
+  ret.reserve(spelling.size());
+  for (const auto& token : spelling) {
+    ret.push_back(tokenDict.getIndex(token));
+  }
+  return packReplabels(ret, tokenDict, maxReps);
+}
+
 } // namespace text
 } // namespace lib
 } // namespace fl

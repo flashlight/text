@@ -1,4 +1,0 @@
-Logging
-======
-
-.. doxygengroup:: logging

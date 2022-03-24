@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <future>
 
+#include "flashlight/lib/text/String.h"
 #include "flashlight/lib/text/tokenizer/PartialFileReader.h"
 
 namespace fl {

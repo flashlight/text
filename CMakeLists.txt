@@ -1,9 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(flashlight LANGUAGES CXX C VERSION 0.3.2)
+project(flashlight-text LANGUAGES CXX C VERSION 0.1)
 
 include(CTest)
-include(CMakeDependentOption)
 
 # ----------------------------- Setup -----------------------------
 find_program(CCACHE_PROGRAM ccache)
@@ -19,7 +18,6 @@ option(FL_CODE_COVERAGE "Enable coverage reporting" OFF)
 
 # Default directories for installation
 set(FL_INSTALL_INC_DIR "include" CACHE PATH "Install path for headers")
-set(FL_INSTALL_INC_DIR_HEADER_LOC ${FL_INSTALL_INC_DIR}/flashlight)
 set(FL_INSTALL_LIB_DIR "lib" CACHE PATH "Install path for libraries")
 set(FL_INSTALL_BIN_DIR "bin" CACHE PATH "Install path for binaries")
 # Other assets
@@ -28,213 +26,62 @@ set(FL_INSTALL_CMAKE_DIR "${FL_INSTALL_ASSETS_BASE_DIR}/cmake" CACHE PATH "Insta
 set(FL_INSTALL_EXAMPLES_DIR "${FL_INSTALL_ASSETS_BASE_DIR}/examples" CACHE PATH "Install path for example files")
 set(FL_INSTALL_DOC_DIR "${FL_INSTALL_ASSETS_BASE_DIR}/doc" CACHE PATH "Install path for documentation")
 
-include(CheckCXXCompilerFlag)
-# All libraries should have their symbols exported so plugins can lazily
-# symbols from any of them
-check_cxx_compiler_flag("-rdynamic" COMPILER_SUPPORTS_RDYNAMIC)
-if(${COMPILER_SUPPORTS_RDYNAMIC})
-  message(STATUS "-rdynamic supported.")
-  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -rdynamic")
-  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -rdynamic")
-else()
-  message(WARNING
-    "This compiler doesn't support dynamic symbol exports. "
-    "Plugin functionality likely won't work.")
-endif()
-
 include(InternalUtils)
 
 # ----------------------------- Configuration -----------------------------
 
-option(FL_BUILD_TESTS "Build tests" ON)
-option(FL_BUILD_EXAMPLES "Build examples" ON)
-option(FL_BUILD_EXPERIMENTAL "Build internal experimental components" OFF)
-option(FL_BUILD_SCRIPTS "Build internal scripts for wav2letter++" OFF)
-option(FL_BUILD_RECIPES "Build recipes" ON)
-option(FL_BUILD_STANDALONE "Build standalone installation" ON)
+option(FL_TEXT_BUILD_TESTS "Build tests" ON)
+option(FL_TEXT_BUILD_STANDALONE "Build standalone installation" ON)
+option(FL_TEXT_USE_KENLM "Use KenLM in flashlight libraries build" ON)
+option(FL_TEXT_BUILD_PYTHON "Build Python bindings" OFF)
 
-# Flashlight backend
-set(FL_BACKEND "CUDA" CACHE STRING "Backend with which to build flashlight")
-# Select from exactly one backend
-set_property(CACHE FL_BACKEND PROPERTY STRINGS CPU CUDA OPENCL)
-# Map to flags
-set(FL_USE_CPU OFF)
-set(FL_USE_CUDA OFF)
-set(FL_USE_OPENCL OFF)
-if (FL_BACKEND STREQUAL "CPU")
-  set(FL_USE_CPU ON)
-elseif (FL_BACKEND STREQUAL "CUDA")
-  set(FL_USE_CUDA ON)
-elseif (FL_BACKEND STREQUAL "OPENCL")
-  set(FL_USE_OPENCL ON)
-else ()
-  message(FATAL_ERROR "Invalid FL_BACKEND specified")
-endif ()
+# ------------------------ Build ------------------------
 
-# Profiling
-# TODO: for now, profiling is only enabled with the CUDA backend -
-# can enable other profiling once an implementation is in place
-cmake_dependent_option(FL_BUILD_PROFILING
-  "Enable profiling with Flashlight" OFF
-  "FL_USE_CUDA" OFF)
+add_library(flashlight-text "")
 
-# List of installable targets
-set(INSTALLABLE_TARGETS)
+target_include_directories(
+  flashlight-text
+  PRIVATE
+  ${PROJECT_SOURCE_DIR}
+)
 
-set(FL_ROOT_DIR ${PROJECT_SOURCE_DIR}/flashlight)
-set(FL_BUILD_BINARY_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/bin")
+target_compile_definitions(
+  flashlight-text
+  PUBLIC
+  FL_TEXT_USE_KENLM=$<BOOL:${FL_TEXT_USE_KENLM}>
+)
 
-# CUDA/nvcc setup
-if (FL_USE_CUDA)
-  enable_language(CUDA)
-  # The CUDA standard is still C++14 to enable interopability with
-  # slightly older and still well-supported versions of CUDA/nvcc
-  # (e.g. CUDA < 11).
-  set(CMAKE_CUDA_STANDARD 14)
-  set(CMAKE_CUDA_STANDARD_REQUIRED ON)
-  include(${CMAKE_MODULE_PATH}/CUDAUtils.cmake)
-  set_cuda_arch_nvcc_flags()
+include(${PROJECT_SOURCE_DIR}/flashlight/lib/text/CMakeLists.txt)
 
-  # remove me? add -fPIC to nvcc flags if needed
-  if (FL_LIBRARIES_BUILD_FOR_PYTHON OR CMAKE_POSITION_INDEPENDENT_CODE)
-    cuda_enable_position_independent_code()
-  endif ()
+if (FL_TEXT_BUILD_PYTHON)
+  include(${PROJECT_SOURCE_DIR}/bindings/python/CMakeLists.txt)
 endif()
 
-# ------------------------ Tests ------------------------
+# ------------------------ Tests + Code Coverage------------------------
 
-if (FL_BUILD_TESTS)
+if (FL_TEXT_BUILD_TESTS)
   enable_testing()
   include(TestUtils)
+  add_subdirectory(${PROJECT_SOURCE_DIR}/flashlight/lib/text/test)
 endif ()
 
-# ------------------------ flashlight Libraries ------------------------
+if (FL_CODE_COVERAGE)
+  add_coverage_to_target(TARGET flashlight-text)
+endif()
 
-option(FL_LIBRARIES_USE_CUDA "Use CUDA in flashlight libraries build" ON)
-option(FL_LIBRARIES_USE_KENLM "Use KenLM in flashlight libraries build" ON)
-option(FL_LIBRARIES_USE_MKL "Use MKL in flashlight libraries build" ON)
-option(FL_LIBRARIES_BUILD_FOR_PYTHON "Build Python bindings" OFF)
+# ------------------------ Installation ------------------------
 
-set(FL_COMPILE_DEFINITIONS
-  $<$<BOOL:${FL_LIBRARIES_USE_CUDA}>:FL_LIBRARIES_USE_CUDA>
-  $<$<BOOL:${FL_LIBRARIES_USE_MKL}>:FL_LIBRARIES_USE_MKL>
-  $<$<BOOL:${FL_LIBRARIES_USE_KENLM}>:FL_LIBRARIES_USE_KENLM>
-  )
+# Install headers
+install(
+  DIRECTORY ${PROJECT_SOURCE_DIR}/flashlight/lib
+  COMPONENT headers
+  DESTINATION ${FL_INSTALL_INC_DIR}/flashlight
+  FILES_MATCHING # preserve directory structure
+  PATTERN  "*.h"
+  PATTERN  "*.hpp"
+  PATTERN "test*" EXCLUDE
+  PATTERN ".git" EXCLUDE
+)
 
-set(FL_LIB_DIR "${FL_ROOT_DIR}/lib")
-include(${FL_LIB_DIR}/CMakeLists.txt)
-
-if (FL_LIBRARIES_BUILD_FOR_PYTHON)
-  set(FL_BINDING_PYTHON "${PROJECT_SOURCE_DIR}/bindings/python")
-  include(${FL_BINDING_PYTHON}/CMakeLists.txt)
-endif ()
-
-setup_install_headers(${FL_LIB_DIR} ${FL_INSTALL_INC_DIR_HEADER_LOC})
-
-# --------------------------- Core Options  ---------------------------
-
-option(FL_BUILD_CORE "Build flashlight core" ON)
-
-fl_dependent_option(
-  FL_BUILD_CONTRIB
-  "Build and link additional flashlight contrib assets."
-  ON "FL_BUILD_CORE" OFF)
-
-# --------------------------- flashlight ---------------------------
-if (FL_BUILD_CORE)
-  message(STATUS "Will build flashlight core and extensions.")
-
-  # Primary lib target. All non-library code is linked here, including app
-  add_library(flashlight "")
-
-  set_target_properties(
-    flashlight
-    PROPERTIES
-    LINKER_LANGUAGE CXX
-    )
-
-  if (FL_CODE_COVERAGE)
-    add_coverage_to_target(TARGET flashlight)
-  endif()
-
-  # ------------------------ Global External Dependencies ------------------------
-  # If cereal is found in a user-defined location, use it rather than
-  # downloading from source
-  find_package(cereal)
-  if (NOT TARGET cereal AND NOT cereal_FOUND AND FL_BUILD_STANDALONE)
-    message(STATUS "cereal NOT found. Will download from source")
-    set(CEREAL_INSTALL_PATH ${FL_INSTALL_INC_DIR}/cereal)
-    include(${CMAKE_MODULE_PATH}/BuildCereal.cmake)
-    add_dependencies(flashlight cereal)
-    # Move cereal headers at install time
-    install(DIRECTORY ${CEREAL_SOURCE_DIR}/include/cereal
-      DESTINATION ${CEREAL_INSTALL_PATH}
-      COMPONENT cereal
-      FILES_MATCHING
-      PATTERN "*.hpp"
-      PATTERN "*.h"
-      PATTERN ".git" EXCLUDE
-      )
-    install(FILES ${CEREAL_SOURCE_DIR}/LICENSE ${CEREAL_SOURCE_DIR}/README.md
-      DESTINATION ${CEREAL_INSTALL_PATH}
-      )
-    target_include_directories(flashlight PUBLIC ${cereal_INCLUDE_DIRS})
-  else()
-    message(STATUS "Found cereal")
-    target_link_libraries(flashlight PRIVATE cereal)
-  endif()
-  setup_install_find_module(${CMAKE_MODULE_PATH}/Findcereal.cmake)
-
-  # -------------------- Locate Backend-specific Dependencies --------------------
-  # TODO: rather than conditionally searching for backend-specific dependencies,
-  # always search for all dependencies, and dynamically build all backends for
-  # which all required dependencies are found.
-
-  if (FL_USE_CUDA)
-     find_package(CUDA 9.2 QUIET) # CUDA 9.2 is required for >= ArrayFire 3.6.1
-     if (CUDA_FOUND)
-       message(STATUS "CUDA found (library: ${CUDA_LIBRARIES} include: ${CUDA_INCLUDE_DIRS})")
-     else()
-       message(STATUS "CUDA not found")
-       message(FATAL_ERROR "CUDA required to build CUDA backend")
-     endif()
-  endif()
-
-  if (FL_USE_OPENCL)
-    find_package(OpenCL)
-    if (OpenCL_FOUND)
-      message(STATUS "OpenCL found (library: ${OpenCL_LIBRARIES} include: ${OpenCL_INCLUDE_DIRS})")
-    else()
-      message(STATUS "OpenCL not found")
-      if (FL_USE_OPENCL)
-        message(FATAL_ERROR "OpenCL required to build OpenCL backend")
-      endif ()
-    endif()
-  endif()
-
-  # ------------------------ flashlight Core ------------------------
-  set(FL_CORE_DIR "${FL_ROOT_DIR}/fl")
-  include(${FL_CORE_DIR}/CMakeLists.txt)
-  list(APPEND INSTALLABLE_TARGETS flashlight)
-  # flashlight core components keep their relative paths with respect to project
-  setup_install_headers(${FL_CORE_DIR} ${FL_INSTALL_INC_DIR_HEADER_LOC})
-  target_compile_definitions(flashlight
-    PUBLIC
-    FL_BACKEND_CPU=$<BOOL:${FL_USE_CPU}>
-    FL_BACKEND_CUDA=$<BOOL:${FL_USE_CUDA}>
-    FL_BACKEND_OPENCL=$<BOOL:${FL_USE_OPENCL}>
-    FL_BUILD_PROFILING=$<BOOL:${FL_BUILD_PROFILING}>
-    )
-
-endif() # if FL_BUILD_CORE
-
-# --------------------------- Pkgs  ---------------------------
-set(FL_PKG_DIR "${FL_ROOT_DIR}/pkg")
-include(${FL_PKG_DIR}/CMakeLists.txt)
-
-# --------------------------- Apps Options  ---------------------------
-set(FL_APPS_DIR "${FL_ROOT_DIR}/app")
-include(${FL_APPS_DIR}/CMakeLists.txt)
-
-# --------------------------- Cleanup ---------------------------
-setup_install_targets(INSTALL_TARGETS ${INSTALLABLE_TARGETS})
+# Install libraries and create CMake config/targets files
+setup_install_targets(INSTALL_TARGETS flashlight-text)

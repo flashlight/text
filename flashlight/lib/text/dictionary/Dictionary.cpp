@@ -5,11 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <fstream>
 #include <iostream>
 #include <stdexcept>
 
-#include "flashlight/lib/common/String.h"
-#include "flashlight/lib/common/System.h"
+#include "flashlight/lib/text/String.h"
 #include "flashlight/lib/text/dictionary/Dictionary.h"
 #include "flashlight/lib/text/dictionary/Utils.h"
 
@@ -22,8 +22,20 @@ Dictionary::Dictionary(std::istream& stream) {
 }
 
 Dictionary::Dictionary(const std::string& filename) {
-  std::ifstream stream = createInputStream(filename);
+  std::ifstream stream = std::ifstream(filename);
+  if (!stream) {
+    throw std::runtime_error("Dictionary - cannot open file  " + filename);
+  }
   createFromStream(stream);
+}
+
+Dictionary::Dictionary(const std::vector<std::string>& tkns) {
+  for (const auto& tkn : tkns) {
+    addEntry(tkn);
+  }
+  if (!isContiguous()) {
+    throw std::runtime_error("Invalid dictionary format - not contiguous");
+  }
 }
 
 void Dictionary::createFromStream(std::istream& stream) {

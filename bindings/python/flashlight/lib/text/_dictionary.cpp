@@ -34,6 +34,7 @@ PYBIND11_MODULE(flashlight_lib_text_dictionary, m) {
   py::class_<Dictionary>(m, "Dictionary")
       .def(py::init<>())
       .def(py::init<const std::string&>(), "filename"_a)
+      .def(py::init<const std::vector<std::string>&>(), "tkns"_a)
       .def("entry_size", &Dictionary::entrySize)
       .def("index_size", &Dictionary::indexSize)
       .def("add_entry", &Dictionary_addEntry_0, "entry"_a, "idx"_a)

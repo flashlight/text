@@ -6,13 +6,14 @@ This source code is licensed under the MIT-style license found in the
 LICENSE file in the root directory of this source tree.
 """
 
+import logging
+
 from .flashlight_lib_text_decoder import (
     LM,
     CriterionType,
     DecodeResult,
     LexiconDecoderOptions,
     LexiconFreeDecoderOptions,
-    KenLM,
     LexiconDecoder,
     LexiconFreeDecoder,
     LMState,
@@ -20,3 +21,10 @@ from .flashlight_lib_text_decoder import (
     Trie,
     TrieNode,
 )
+
+try:
+    from .flashlight_lib_text_decoder import (
+        KenLM,
+    )
+except ImportError:
+    logging.info("Flashlight Text Python bindings installed without KenLM.")

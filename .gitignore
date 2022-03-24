@@ -42,8 +42,10 @@ wheels/
 *.o
 *.obj
 
-# Compiled Static libraries
+# Compiled libraries
 *.lai
 *.la
 *.a
+*.so
+*.so\.*
 *.lib
