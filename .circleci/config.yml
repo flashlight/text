@@ -1,0 +1,159 @@
+version: 2.1
+
+commands:
+  install_build_dependencies:
+    steps:
+      - run:
+          name: "Install Build Dependencies"
+          command: |
+            sudo apt -y update && \
+            sudo apt -y install build-essential python3-dev python3-pip cmake \
+            libboost-program-options-dev libboost-system-dev libboost-thread-dev \
+            libboost-test-dev liblzma-dev libbz2-dev zlib1g-dev ninja-build
+  install_kenlm:
+    steps:
+      - run:
+          name: "Install KenLM"
+          command: |
+            git clone https://github.com/kpu/kenlm.git && cd kenlm && \
+            mkdir build && cd build && \
+            cmake .. -DBUILD_SHARED_LIBS=ON && \
+            make -j$(nproc) && sudo make install -j$(nproc) && sudo ldconfig
+  build_flashlight_text:
+    parameters:
+      use_kenlm:
+        type: string
+        default: "ON"
+      build_shared_libs:
+        type: string
+        default: "OFF"
+    steps:
+      - run:
+          name: "Build and Install Flashlight Text"
+          command: |
+            mkdir build && cd build && \
+            cmake -G Ninja .. \
+              -DBUILD_SHARED_LIBS=<< parameters.build_shared_libs >> \
+              -DFL_TEXT_USE_KENLM=<< parameters.use_kenlm >> && \
+            ninja && sudo ninja install && sudo ldconfig
+  test_with_external_project:
+    parameters:
+      build_shared_libs:
+        type: string
+        default: "OFF"
+    steps:
+      - run:
+          name: Set up dependent external project
+          command: |
+            mkdir -p test_project && cd test_project && \
+            echo -e "\
+              #include <flashlight/lib/text/dictionary/Dictionary.h> \n
+              #include <iostream>                                    \n
+              int main() {                                           \n
+                fl::lib::text::Dictionary myDict;                    \n
+                myDict.addEntry(\"A\", 1);                           \n
+                myDict.addEntry(\"B\", 2);                           \n
+                return 0;                                            \n
+              }                                                      \n
+            " > main.cpp && \
+            echo -e "\
+              cmake_minimum_required(VERSION 3.10)                            \n
+              project(test_project)                                           \n
+              set(CMAKE_CXX_STANDARD 17)                                      \n
+              set(CMAKE_CXX_STANDARD_REQUIRED ON)                             \n
+              add_executable(main main.cpp)                                   \n
+              find_package(flashlight-text CONFIG REQUIRED)                   \n
+              target_link_libraries(main PRIVATE flashlight::flashlight-text) \n
+            " > CMakeLists.txt
+      - run:
+          name: Build dependent external project
+          command: |
+            cd test_project && mkdir -p build && cd build && \
+            cmake .. -DBUILD_SHARED_LIBS=<< parameters.build_shared_libs >> && \
+            make -j$(nproc) && ./main
+
+jobs:
+  ubuntu_20_gcc_9:
+    parameters:
+      use_kenlm:
+        type: string
+        default: "ON"
+      build_shared_libs:
+        type: string
+        default: "OFF"
+    docker:
+      - image: cimg/base:2021.04
+    steps:
+      - checkout
+      - install_build_dependencies
+      - build_flashlight_text:
+          build_shared_libs: << parameters.build_shared_libs >>
+          use_kenlm: << parameters.use_kenlm >>
+      - run:
+          name: "Run C++ Tests"
+          command: |
+            cd build && ninja test
+      - test_with_external_project:
+          build_shared_libs: << parameters.build_shared_libs >>
+
+  ubuntu_20_gcc_9_python:
+    parameters:
+      use_kenlm:
+        type: string
+        default: "ON"
+    docker:
+      - image: cimg/base:2021.04
+    steps:
+      - checkout
+      - install_build_dependencies
+      - install_kenlm
+      - run:
+          name: "Install Python Bindings"
+          command: |
+            pip3 install packaging && \
+            pip3 install numpy && \
+            cd bindings/python && \
+            USE_KENLM=<< parameters.use_kenlm >> python3 setup.py install --user --prefix=
+      - run:
+          name: "Run Python Binding Tests"
+          command: |
+            cd bindings/python/test && USE_KENLM=<< parameters.use_kenlm >> \
+            python3 -m unittest discover -v .
+
+  ubuntu_20_gcc_9_external:
+    parameters:
+      use_kenlm:
+        type: string
+        default: "ON"
+      build_shared_libs:
+        type: string
+        default: "OFF"
+    docker:
+      - image: cimg/base:2021.04
+    steps:
+      - checkout
+      - install_build_dependencies
+
+workflows:
+  build-test:
+    jobs:
+      - ubuntu_20_gcc_9:
+          name: "Ubuntu 20.04 gcc-9 static"
+          use_kenlm: "OFF"
+      - ubuntu_20_gcc_9:
+          name: "Ubuntu 20.04 gcc-9 shared"
+          use_kenlm: "OFF"
+          build_shared_libs: "ON"
+      - ubuntu_20_gcc_9:
+          name: "Ubuntu 20.04 gcc-9 static + KenLM"
+          use_kenlm: "ON"
+      - ubuntu_20_gcc_9:
+          name: "Ubuntu 20.04 gcc-9 shared + KenLM"
+          use_kenlm: "ON"
+          build_shared_libs: "ON"
+      - ubuntu_20_gcc_9_python:
+          name: "Ubuntu 20.04 gcc-9 Python"
+          use_kenlm: "OFF"
+      - ubuntu_20_gcc_9_python:
+          name: "Ubuntu 20.04 gcc-9 Python + KenLM"
+          use_kenlm: "ON"
