@@ -96,6 +96,16 @@ jobs:
       - test_with_external_project:
           build_shared_libs: << parameters.build_shared_libs >>
 
+  ubuntu_20_gcc_9_standalone:
+    docker:
+      - image: cimg/base:2021.04
+    steps:
+      - checkout
+      - install_build_dependencies
+      - build_flashlight_text:
+          build_shared_libs: "ON"
+          use_kenlm: "ON"
+
   ubuntu_20_gcc_9_python:
     parameters:
       use_kenlm:
@@ -157,3 +167,5 @@ workflows:
       - ubuntu_20_gcc_9_python:
           name: "Ubuntu 20.04 gcc-9 Python + KenLM"
           use_kenlm: "ON"
+      - ubuntu_20_gcc_9_standalone:
+          name: "Ubuntu 20.04 gcc-9 standalone KenLM"
