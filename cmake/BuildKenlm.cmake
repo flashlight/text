@@ -16,7 +16,7 @@ include(ExternalProject)
 set(kenlm_TEMP_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/extern/kenlm)
 set(kenlm_URL https://github.com/kpu/kenlm.git)
 set(kenlm_BUILD ${CMAKE_CURRENT_BINARY_DIR}/third-party/kenlm)
-set(kenlm_TAG 4a277534fd33da323205e6ec256e8fd0ff6ee6fa)
+set(kenlm_TAG 5cea457db26950a73d638425c183b368c06ed7c6)
 set(kenlm_BINARY_DIR ${kenlm_BUILD}/src/kenlm-build)
 
 if (BUILD_SHARED_LIBS)
