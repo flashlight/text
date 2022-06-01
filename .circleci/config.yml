@@ -27,6 +27,12 @@ commands:
       build_shared_libs:
         type: string
         default: "OFF"
+      build_standalone:
+        type: string
+        default: "ON"
+      build_code_coverage:
+        type: string
+        default: "OFF"
     steps:
       - run:
           name: "Build and Install Flashlight Text"
@@ -34,7 +40,9 @@ commands:
             mkdir build && cd build && \
             cmake -G Ninja .. \
               -DBUILD_SHARED_LIBS=<< parameters.build_shared_libs >> \
-              -DFL_TEXT_USE_KENLM=<< parameters.use_kenlm >> && \
+              -DFL_TEXT_USE_KENLM=<< parameters.use_kenlm >> \
+              -DFL_TEXT_BUILD_STANDALONE=<< parameters.build_standalone >> \
+              -DFL_TEXT_CODE_COVERAGE=<< parameters.build_code_coverage >> && \
             ninja && sudo ninja install && sudo ldconfig
   test_with_external_project:
     parameters:
@@ -71,6 +79,20 @@ commands:
             cd test_project && mkdir -p build && cd build && \
             cmake .. -DBUILD_SHARED_LIBS=<< parameters.build_shared_libs >> && \
             make -j$(nproc) && ./main
+  run_codecov:
+    steps:
+      - run:
+          name: "Get code coverage"
+          command: |
+            sudo apt-get install -y --no-install-recommends lcov curl && \
+            lcov --capture --directory . --output-file coverage.info && \
+            lcov --remove coverage.info '/usr/*' --output-file coverage.info &&
+            lcov --remove coverage.info '*/include/*' --output-file coverage.info && \
+            lcov --remove coverage.info '*/gtest/*' --output-file coverage.info && \
+            lcov --list coverage.info && \
+            bash <(curl -s https://codecov.io/bash) -f coverage.info \
+            -t $CODECOV_TOKEN \
+            || echo 'Codecov did not collect coverage reports'
 
 jobs:
   ubuntu_20_gcc_9:
@@ -81,30 +103,36 @@ jobs:
       build_shared_libs:
         type: string
         default: "OFF"
+      build_standalone:
+        type: string
+        default: "ON"
+      run_codecov:
+        type: string
+        default: ""
     docker:
       - image: cimg/base:2021.04
     steps:
       - checkout
       - install_build_dependencies
+      - when:
+          condition: << parameters.build_standalone >>
+          steps:
+            - install_kenlm
       - build_flashlight_text:
           build_shared_libs: << parameters.build_shared_libs >>
           use_kenlm: << parameters.use_kenlm >>
+          build_code_coverage: << parameters.run_codecov >>
+          build_standalone: << parameters.build_standalone >>
       - run:
           name: "Run C++ Tests"
           command: |
             cd build && ninja test
       - test_with_external_project:
           build_shared_libs: << parameters.build_shared_libs >>
-
-  ubuntu_20_gcc_9_standalone:
-    docker:
-      - image: cimg/base:2021.04
-    steps:
-      - checkout
-      - install_build_dependencies
-      - build_flashlight_text:
-          build_shared_libs: "ON"
-          use_kenlm: "ON"
+      - when:
+          condition: << parameters.run_codecov >>
+          steps:
+            - run_codecov
 
   ubuntu_20_gcc_9_python:
     parameters:
@@ -161,11 +189,14 @@ workflows:
           name: "Ubuntu 20.04 gcc-9 shared + KenLM"
           use_kenlm: "ON"
           build_shared_libs: "ON"
+          run_codecov: "ON"
       - ubuntu_20_gcc_9_python:
           name: "Ubuntu 20.04 gcc-9 Python"
           use_kenlm: "OFF"
       - ubuntu_20_gcc_9_python:
           name: "Ubuntu 20.04 gcc-9 Python + KenLM"
           use_kenlm: "ON"
-      - ubuntu_20_gcc_9_standalone:
-          name: "Ubuntu 20.04 gcc-9 standalone KenLM"
+      - ubuntu_20_gcc_9:
+          name: "Ubuntu 20.04 gcc-9 no-standalone - shared + KenLM"
+          build_shared_libs: "ON"
+          build_standalone: "OFF"

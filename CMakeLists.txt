@@ -14,7 +14,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-option(FL_CODE_COVERAGE "Enable coverage reporting" OFF)
+option(FL_TEXT_CODE_COVERAGE "Enable coverage reporting" OFF)
 
 # Default directories for installation
 set(FL_INSTALL_INC_DIR "include" CACHE PATH "Install path for headers")
@@ -65,7 +65,7 @@ if (FL_TEXT_BUILD_TESTS)
   add_subdirectory(${PROJECT_SOURCE_DIR}/flashlight/lib/text/test)
 endif ()
 
-if (FL_CODE_COVERAGE)
+if (FL_TEXT_CODE_COVERAGE)
   add_coverage_to_target(TARGET flashlight-text)
 endif()
 
