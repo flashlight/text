@@ -27,6 +27,9 @@ class ZeroLM : public LM {
 
   std::pair<LMStatePtr, float> finish(const LMStatePtr& state) override;
 };
+
+using ZeroLMPtr = std::shared_ptr<ZeroLM>;
+
 } // namespace text
 } // namespace lib
 } // namespace fl
