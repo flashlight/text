@@ -14,6 +14,7 @@
 #if FL_TEXT_USE_KENLM
 #include "flashlight/lib/text/decoder/lm/KenLM.h"
 #endif // FL_TEXT_USE_KENLM
+#include "flashlight/lib/text/decoder/lm/ZeroLM.h"
 
 namespace py = pybind11;
 using namespace fl::lib::text;
@@ -170,6 +171,8 @@ PYBIND11_MODULE(flashlight_lib_text_decoder, m) {
           "path"_a,
           "usr_token_dict"_a);
 #endif
+
+  py::class_<ZeroLM, ZeroLMPtr, LM>(m, "ZeroLM").def(py::init<>());
 
   py::enum_<CriterionType>(m, "CriterionType")
       .value("ASG", CriterionType::ASG)
