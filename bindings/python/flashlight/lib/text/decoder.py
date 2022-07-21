@@ -20,6 +20,7 @@ from .flashlight_lib_text_decoder import (
     SmearingMode,
     Trie,
     TrieNode,
+    ZeroLM,
 )
 
 try:
