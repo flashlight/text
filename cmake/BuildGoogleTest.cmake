@@ -5,7 +5,7 @@ include(ExternalProject)
 set(gtest_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/googletest/src/googletest/googletest/include)
 set(gtest_URL https://github.com/google/googletest.git)
 set(gtest_BUILD ${CMAKE_CURRENT_BINARY_DIR}/third-party/googletest)
-set(gtest_TAG release-1.11.0)
+set(gtest_TAG release-1.12.1)
 set(gtest_BINARY_DIR ${gtest_BUILD}/src/gtest-build)
 
 if (BUILD_SHARED_LIBS)
