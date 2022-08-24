@@ -45,7 +45,7 @@ TEST(DictionaryTest, TestBasic) {
 TEST(DictionaryTest, FromFile) {
   ASSERT_THROW(Dictionary("not_a_real_file"), std::runtime_error);
 
-  Dictionary dict(loadPath / "test.dict");
+  Dictionary dict((loadPath / "test.dict").string());
   ASSERT_EQ(dict.entrySize(), 10);
   ASSERT_EQ(dict.indexSize(), 7);
   ASSERT_TRUE(dict.contains("a"));
