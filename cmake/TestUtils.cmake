@@ -1,15 +1,15 @@
-cmake_minimum_required(VERSION 3.5.1)
+cmake_minimum_required(VERSION 3.10)
 
-set(GTEST_IMPORTED_TARGETS "")
+set(GTEST_TARGETS "")
 
 # Get or find Google Test and Google Mock
-find_package(GTest 1.10.0)
+find_package(GTest 1.12.1)
 if (NOT GTEST_FOUND)
   if (NOT TARGET gtest)
     message(STATUS "googletest not found - will download and build from source")
-    # Download and build googletest
-    include(${CMAKE_MODULE_PATH}/BuildGoogleTest.cmake) # internally sets GTEST_LIBRARIES
-    list(APPEND GTEST_IMPORTED_TARGETS GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
+    # Download, build, and find the resulting googletest
+    include(${CMAKE_MODULE_PATH}/BuildGoogleTest.cmake)
+    list(APPEND GTEST_TARGETS GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
   endif()
 else()
   message(STATUS "gtest found: (include: ${GTEST_INCLUDE_DIRS}, lib: ${GTEST_BOTH_LIBRARIES}")
@@ -18,13 +18,14 @@ else()
     if (NOT TARGET GTest::Main)
       message(FATAL_ERROR "Google Test must be built with main")
     endif()
-    list(APPEND GTEST_IMPORTED_TARGETS GTest::GTest GTest::Main)
+    # TODO: these targets are deprecated in CMake 3.20
+    list(APPEND GTEST_TARGETS GTest::GTest GTest::Main)
   endif()
   if (NOT TARGET GTest::gmock)
     find_package(GMock REQUIRED)
     message(STATUS "gmock found: (include: ${GMOCK_INCLUDE_DIRS}, lib: ${GMOCK_BOTH_LIBRARIES})")
   endif()
-  list(APPEND GTEST_IMPORTED_TARGETS GTest::gmock GTest::gmock_main)
+  list(APPEND GTEST_TARGETS GTest::gmock GTest::gmock_main)
   message(STATUS "Found gtest and gmock on system.")
 endif()
 
@@ -47,7 +48,7 @@ function(build_test)
   target_link_libraries(
     ${target}
     PUBLIC
-    ${GTEST_IMPORTED_TARGETS}
+    ${GTEST_TARGETS}
     ${build_test_LIBS}
      ${CMAKE_THREAD_LIBS_INIT}
     )
