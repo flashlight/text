@@ -1,24 +1,57 @@
 version: 2.1
 
+macos_env: &macos_env
+  macos:
+    xcode: 13.4.1
+  resource_class: large
+  environment:
+    HOMEBREW_NO_AUTO_UPDATE: "1"
+
 commands:
-  install_build_dependencies:
+  install_ubuntu_build_dependencies:
+    parameters:
+      use_kenlm:
+        type: string
     steps:
       - run:
           name: "Install Build Dependencies"
           command: |
             sudo apt -y update && \
-            sudo apt -y install build-essential python3-dev python3-pip cmake \
-            libboost-program-options-dev libboost-system-dev libboost-thread-dev \
-            libboost-test-dev liblzma-dev libbz2-dev zlib1g-dev ninja-build
+            sudo apt -y install build-essential python3-dev python3-pip \
+            ninja-build cmake
+      - when:
+          condition:
+            equal: ["ON", << parameters.use_kenlm >>]
+          steps:
+            - run: |
+                sudo apt -y install libboost-program-options-dev libboost-system-dev libboost-thread-dev \
+                libboost-test-dev liblzma-dev libbz2-dev zlib1g-dev
+  install_macos_build_dependencies:
+    steps:
+      - run:
+          name: "Install Build Dependencies"
+          command: |
+            brew install cmake ninja googletest boost zlib bzip2 lzip
   install_kenlm:
+    parameters:
+      platform:
+        type: string
+        default: "linux"
     steps:
       - run:
           name: "Install KenLM"
           command: |
             git clone https://github.com/kpu/kenlm.git && cd kenlm && \
             mkdir build && cd build && \
-            cmake .. -DBUILD_SHARED_LIBS=ON && \
-            make -j$(nproc) && sudo make install -j$(nproc) && sudo ldconfig
+            cmake .. -G Ninja -DBUILD_SHARED_LIBS=ON && \
+            ninja && sudo ninja install
+      - when:
+          condition:
+            equal: ["linux", << parameters.platform >>]
+          steps:
+            - run:
+                name: "Configure shared lib paths"
+                command: sudo ldconfig
   build_flashlight_text:
     parameters:
       use_kenlm:
@@ -33,6 +66,9 @@ commands:
       build_code_coverage:
         type: string
         default: "OFF"
+      platform:
+        type: string
+        default: "linux"
     steps:
       - run:
           name: "Build and Install Flashlight Text"
@@ -43,7 +79,38 @@ commands:
               -DFL_TEXT_USE_KENLM=<< parameters.use_kenlm >> \
               -DFL_TEXT_BUILD_STANDALONE=<< parameters.build_standalone >> \
               -DFL_TEXT_CODE_COVERAGE=<< parameters.build_code_coverage >> && \
-            ninja && sudo ninja install && sudo ldconfig
+            ninja && sudo ninja install
+      - when:
+          condition:
+            equal: ["linux", << parameters.platform >>]
+          steps:
+            - run:
+                name: "Configure shared lib paths"
+                command: sudo ldconfig
+  install_python_bindings:
+    parameters:
+      use_kenlm:
+        type: string
+        default: "ON"
+    steps:
+      - run:
+          name: "Install Python Bindings"
+          command: |
+            pip3 install packaging && \
+            pip3 install numpy && \
+            cd bindings/python && \
+            USE_KENLM=<< parameters.use_kenlm >> pip3 install -e .
+  run_python_tests:
+    parameters:
+      use_kenlm:
+        type: string
+        default: "ON"
+    steps:
+      - run:
+          name: "Run Python Binding Tests"
+          command: |
+            cd bindings/python/test && USE_KENLM=<< parameters.use_kenlm >> \
+            python3 -m unittest discover -v .
   test_with_external_project:
     parameters:
       build_shared_libs:
@@ -77,8 +144,8 @@ commands:
           name: Build dependent external project
           command: |
             cd test_project && mkdir -p build && cd build && \
-            cmake .. -DBUILD_SHARED_LIBS=<< parameters.build_shared_libs >> && \
-            make -j$(nproc) && ./main
+            cmake .. -G Ninja -DBUILD_SHARED_LIBS=<< parameters.build_shared_libs >> && \
+            ninja && ./main
   run_codecov:
     steps:
       - run:
@@ -113,9 +180,13 @@ jobs:
       - image: cimg/base:2021.04
     steps:
       - checkout
-      - install_build_dependencies
+      - install_ubuntu_build_dependencies:
+          use_kenlm: << parameters.use_kenlm >>
       - when:
-          condition: << parameters.build_standalone >>
+          condition:
+            and:
+              - equal: ["OFF", << parameters.build_standalone >>]
+              - equal: ["ON", << parameters.use_kenlm >>]
           steps:
             - install_kenlm
       - build_flashlight_text:
@@ -143,20 +214,17 @@ jobs:
       - image: cimg/base:2021.04
     steps:
       - checkout
-      - install_build_dependencies
-      - install_kenlm
-      - run:
-          name: "Install Python Bindings"
-          command: |
-            pip3 install packaging && \
-            pip3 install numpy && \
-            cd bindings/python && \
-            USE_KENLM=<< parameters.use_kenlm >> python3 setup.py install --user --prefix=
-      - run:
-          name: "Run Python Binding Tests"
-          command: |
-            cd bindings/python/test && USE_KENLM=<< parameters.use_kenlm >> \
-            python3 -m unittest discover -v .
+      - install_ubuntu_build_dependencies:
+          use_kenlm: << parameters.use_kenlm >>
+      - when:
+          condition:
+            equal: ["ON", << parameters.use_kenlm >>]
+          steps:
+            - install_kenlm
+      - install_python_bindings:
+          use_kenlm: << parameters.use_kenlm >>
+      - run_python_tests:
+          use_kenlm: << parameters.use_kenlm >>
 
   ubuntu_20_gcc_9_external:
     parameters:
@@ -170,7 +238,59 @@ jobs:
       - image: cimg/base:2021.04
     steps:
       - checkout
-      - install_build_dependencies
+      - install_ubuntu_build_dependencies:
+          use_kenlm: << parameters.use_kenlm >>
+
+  macos_clang_13:
+    parameters:
+      use_kenlm:
+        type: string
+        default: "ON"
+      build_shared_libs:
+        type: string
+        default: "OFF"
+      build_standalone:
+        type: string
+        default: "ON"
+    <<: *macos_env
+    shell: /bin/bash -eux -o pipefail
+    steps:
+      - checkout
+      - install_macos_build_dependencies
+      - when:
+          condition:
+            and:
+              - equal: ["OFF", << parameters.build_standalone >>]
+              - equal: ["ON", << parameters.use_kenlm >>]
+          steps:
+            - install_kenlm:
+                platform: "macos"
+      - build_flashlight_text:
+          platform: "macos"
+          use_kenlm: << parameters.use_kenlm >>
+          build_shared_libs: << parameters.build_standalone >>
+          build_standalone: << parameters.build_standalone >>
+
+  macos_clang_13_python:
+    parameters:
+      use_kenlm:
+        type: string
+        default: "ON"
+    <<: *macos_env
+    shell: /bin/bash -eux -o pipefail
+    steps:
+      - checkout
+      - install_macos_build_dependencies
+      - when:
+          condition:
+            equal: ["ON", << parameters.use_kenlm >>]
+          steps:
+            - install_kenlm:
+                platform: "macos"
+      - install_python_bindings:
+          use_kenlm: << parameters.use_kenlm >>
+      - run_python_tests:
+          use_kenlm: << parameters.use_kenlm >>
 
 workflows:
   build-test:
@@ -198,5 +318,14 @@ workflows:
           use_kenlm: "ON"
       - ubuntu_20_gcc_9:
           name: "Ubuntu 20.04 gcc-9 no-standalone - shared + KenLM"
+          use_kenlm: "ON"
           build_shared_libs: "ON"
           build_standalone: "OFF"
+      - macos_clang_13:
+          name: "macOS Clang 13 no-standalone - shared + KenLM"
+          use_kenlm: "ON"
+          build_shared_libs: "ON"
+          build_standalone: "OFF"
+      - macos_clang_13_python:
+          name: "macOS Clang 13 Python + KenLM"
+          use_kenlm: "ON"
