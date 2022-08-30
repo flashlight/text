@@ -21,8 +21,8 @@ TEST(PartialFileReaderTest, Reading) {
   fl::lib::text::PartialFileReader subFile1(0, 2);
   fl::lib::text::PartialFileReader subFile2(1, 2);
 
-  subFile1.loadFile(loadPath / "test.txt");
-  subFile2.loadFile(loadPath / "test.txt");
+  subFile1.loadFile((loadPath / "test.txt").string());
+  subFile2.loadFile((loadPath / "test.txt").string());
 
   std::vector<std::string> target = {
       "this",
@@ -59,7 +59,7 @@ TEST(PartialFileReaderTest, Reading) {
 
 TEST(TokenizerTest, Counting) {
   auto tokenizer = fl::lib::text::Tokenizer();
-  tokenizer.countTokens(loadPath / "test.txt", 2);
+  tokenizer.countTokens((loadPath / "test.txt").string(), 2);
   ASSERT_EQ(tokenizer.totalTokens(), 13);
   ASSERT_EQ(tokenizer.totalSentences(), 4);
 
