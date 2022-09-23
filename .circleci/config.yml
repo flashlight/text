@@ -25,9 +25,11 @@ commands:
           condition:
             equal: ["ON", << parameters.use_kenlm >>]
           steps:
-            - run: |
-                sudo apt -y install libboost-program-options-dev libboost-system-dev libboost-thread-dev \
-                libboost-test-dev liblzma-dev libbz2-dev zlib1g-dev
+            - run:
+                name: "Install KenLM Build Dependencies"
+                command: |
+                  sudo apt -y install libboost-program-options-dev libboost-system-dev libboost-thread-dev \
+                  libboost-test-dev liblzma-dev libbz2-dev zlib1g-dev
   install_macos_build_dependencies:
     steps:
       - run:
