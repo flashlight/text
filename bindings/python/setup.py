@@ -73,15 +73,14 @@ class CMakeBuild(build_ext):
         build_args = ["--config", cfg]
 
         if platform.system() == "Windows":
-            # cmake_args += [
-            #     "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}".format(cfg.upper(), ext_dir)
-            # ]
-            # if sys.maxsize > 2 ** 32:
-            #     cmake_args += ["-A", "x64"]
-            # build_args += ["--", "/m"]
-            raise RuntimeError(
-                "flashlight-text doesn't support building on Windows [yet]"
-            )
+            cmake_args += [
+                "-DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON",
+                "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}".format(cfg.upper(), ext_dir),
+                "-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_{}={}".format(cfg.upper(), ext_dir),
+            ]
+            if sys.maxsize > 2**32:
+                cmake_args += ["-A", "x64"]
+            build_args += ["--", "/m"]
         else:
             cmake_args += ["-DCMAKE_BUILD_TYPE=" + cfg]
             build_args += ["--", "-j4"]

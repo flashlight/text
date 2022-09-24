@@ -40,6 +40,10 @@ commands:
           name: "Install Build Dependencies"
           command: |
             choco install cmake python3 -y
+      # windows needs a path modification
+      - run:
+          name: "Set PATH to find CMake"
+          command: echo 'export PATH="$PATH:/c/Program Files/CMake/bin"' >> $BASH_ENV
   install_kenlm:
     parameters:
       platform:
@@ -78,14 +82,6 @@ commands:
         type: string
         default: "linux"
     steps:
-      # windows needs a path modification
-      - when:
-          condition:
-            equal: ["windows", << parameters.platform >>]
-          steps:
-            - run:
-                name: "Set PATH to find CMake"
-                command: echo 'export PATH="$PATH:/c/Program Files/CMake/bin"' >> $BASH_ENV
       - run:
           name: "Build and Install Flashlight Text"
           command: |
@@ -336,6 +332,20 @@ jobs:
           platform: "windows"
           use_kenlm: "OFF"
 
+  windows_msvc_python:
+    parameters:
+      use_kenlm:
+        type: string
+        default: "OFF"
+    executor:
+      name: win/default
+      shell: bash.exe
+    steps:
+      - checkout
+      - install_msvc_build_dependencies
+      - install_python_bindings:
+          use_kenlm: "OFF"
+
 workflows:
   build-test:
     jobs:
@@ -375,3 +385,5 @@ workflows:
           use_kenlm: "ON"
       - windows_msvc:
           name: "Windows VS 17 2022 | MSVC 19.33 no-standalone"
+      - windows_msvc_python:
+          name: "Windows VS 17 2022 | MSVC 19.33 Python"
