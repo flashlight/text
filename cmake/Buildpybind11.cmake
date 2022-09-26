@@ -1,7 +1,7 @@
 include(ExternalProject)
 
 set(pybind11_URL https://github.com/pybind/pybind11.git)
-set(pybind11_TAG 9a19306fbf30642ca331d0ec88e7da54a96860f9) # release 2.2.4
+set(pybind11_TAG v2.10.0)
 
 # Download pybind11
 ExternalProject_Add(
