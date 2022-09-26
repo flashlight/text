@@ -41,7 +41,7 @@ struct LexiconDecoderState {
   int word; // Label of word (-1 if incomplete)
   bool prevBlank; // If previous hypothesis is blank (for CTC only)
 
-  double amScore; // Accumulated AM score so far
+  double emittingModelScore; // Accumulated AM score so far
   double lmScore; // Accumulated LM score so far
 
   LexiconDecoderState(
@@ -52,7 +52,7 @@ struct LexiconDecoderState {
       const int token,
       const int word,
       const bool prevBlank = false,
-      const double amScore = 0,
+      const double emittingModelScore = 0,
       const double lmScore = 0)
       : score(score),
         lmState(lmState),
@@ -61,7 +61,7 @@ struct LexiconDecoderState {
         token(token),
         word(word),
         prevBlank(prevBlank),
-        amScore(amScore),
+        emittingModelScore(emittingModelScore),
         lmScore(lmScore) {}
 
   LexiconDecoderState()
@@ -72,7 +72,7 @@ struct LexiconDecoderState {
         token(-1),
         word(-1),
         prevBlank(false),
-        amScore(0.),
+        emittingModelScore(0.),
         lmScore(0.) {}
 
   int compareNoScoreStates(const LexiconDecoderState* node) const {
@@ -106,7 +106,7 @@ struct LexiconDecoderState {
  * |W_unknown| + silScore_ * |{i| pi_i = <sil>}|
  *
  * where P_{lm}(W) is the language model score, pi_i is the value for the i-th
- * frame in the path leading to W and AM(W) is the (unnormalized) acoustic model
+ * frame in the path leading to W and AM(W) is the (unnormalized) emitting model
  * score of the transcription W. Note that the lexicon is used to limit the
  * search space and all candidate words are generated from it if unkScore is
  * -inf, otherwise <UNK> will be generated for OOVs.
@@ -160,7 +160,7 @@ class LexiconDecoder : public Decoder {
   int unk_;
   // matrix of transitions (for ASG criterion)
   std::vector<float> transitions_;
-  // if LM is token-level (operates on the same level as acoustic model)
+  // if LM is token-level (operates on the same level as the emitting model)
   // or it is word-level (in case of false)
   bool isLmToken_;
 

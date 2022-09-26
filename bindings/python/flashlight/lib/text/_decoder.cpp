@@ -240,7 +240,7 @@ PYBIND11_MODULE(flashlight_lib_text_decoder, m) {
   py::class_<DecodeResult>(m, "DecodeResult")
       .def(py::init<int>(), "length"_a)
       .def_readwrite("score", &DecodeResult::score)
-      .def_readwrite("amScore", &DecodeResult::amScore)
+      .def_readwrite("emittingModelScore", &DecodeResult::emittingModelScore)
       .def_readwrite("lmScore", &DecodeResult::lmScore)
       .def_readwrite("words", &DecodeResult::words)
       .def_readwrite("tokens", &DecodeResult::tokens);

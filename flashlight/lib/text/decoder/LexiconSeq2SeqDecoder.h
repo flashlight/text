@@ -12,21 +12,12 @@
 
 #include "flashlight/lib/text/decoder/Decoder.h"
 #include "flashlight/lib/text/decoder/Trie.h"
+#include "flashlight/lib/text/decoder/Utils.h"
 #include "flashlight/lib/text/decoder/lm/LM.h"
 
 namespace fl {
 namespace lib {
 namespace text {
-
-using AMStatePtr = std::shared_ptr<void>;
-using AMUpdateFunc = std::function<
-    std::pair<std::vector<std::vector<float>>, std::vector<AMStatePtr>>(
-        const float*,
-        const int,
-        const int,
-        const std::vector<int>&,
-        const std::vector<AMStatePtr>&,
-        int&)>;
 
 struct LexiconSeq2SeqDecoderOptions {
   int beamSize; // Maximum number of hypothesis we hold after each step
@@ -49,9 +40,9 @@ struct LexiconSeq2SeqDecoderState {
   const LexiconSeq2SeqDecoderState* parent; // Parent hypothesis
   int token; // Label of token
   int word;
-  AMStatePtr amState; // Acoustic model state
+  EmittingModelStatePtr emittingModelState; // Acoustic model state
 
-  double amScore; // Accumulated AM score so far
+  double emittingModelScore; // Accumulated AM score so far
   double lmScore; // Accumulated LM score so far
 
   LexiconSeq2SeqDecoderState(
@@ -61,8 +52,8 @@ struct LexiconSeq2SeqDecoderState {
       const LexiconSeq2SeqDecoderState* parent,
       const int token,
       const int word,
-      const AMStatePtr& amState,
-      const double amScore = 0,
+      const EmittingModelStatePtr& emittingModelState,
+      const double emittingModelScore = 0,
       const double lmScore = 0)
       : score(score),
         lmState(lmState),
@@ -70,8 +61,8 @@ struct LexiconSeq2SeqDecoderState {
         parent(parent),
         token(token),
         word(word),
-        amState(amState),
-        amScore(amScore),
+        emittingModelState(emittingModelState),
+        emittingModelScore(emittingModelScore),
         lmScore(lmScore) {}
 
   LexiconSeq2SeqDecoderState()
@@ -81,8 +72,8 @@ struct LexiconSeq2SeqDecoderState {
         parent(nullptr),
         token(-1),
         word(-1),
-        amState(nullptr),
-        amScore(0.),
+        emittingModelState(nullptr),
+        emittingModelScore(0.),
         lmScore(0.) {}
 
   int compareNoScoreStates(const LexiconSeq2SeqDecoderState* node) const {
@@ -122,14 +113,14 @@ class LexiconSeq2SeqDecoder : public Decoder {
       const TriePtr& lexicon,
       const LMPtr& lm,
       const int eos,
-      AMUpdateFunc amUpdateFunc,
+      EmittingModelUpdateFunc EmittingModelUpdateFunc,
       const int maxOutputLength,
       const bool isLmToken)
       : opt_(std::move(opt)),
         lm_(lm),
         lexicon_(lexicon),
         eos_(eos),
-        amUpdateFunc_(amUpdateFunc),
+        EmittingModelUpdateFunc_(EmittingModelUpdateFunc),
         maxOutputLength_(maxOutputLength),
         isLmToken_(isLmToken) {}
 
@@ -148,9 +139,9 @@ class LexiconSeq2SeqDecoder : public Decoder {
   LMPtr lm_;
   TriePtr lexicon_;
   int eos_;
-  AMUpdateFunc amUpdateFunc_;
+  EmittingModelUpdateFunc EmittingModelUpdateFunc_;
   std::vector<int> rawY_;
-  std::vector<AMStatePtr> rawPrevStates_;
+  std::vector<EmittingModelStatePtr> rawPrevStates_;
   int maxOutputLength_;
   bool isLmToken_;
 

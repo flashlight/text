@@ -7,7 +7,7 @@ LICENSE file in the root directory of this source tree.
 """
 
 # Perform beam-search decoding with word-level LM
-# this is test with dumped acoustic model scores
+# this is test with dumped emitting model scores
 
 import math
 import os
@@ -104,7 +104,7 @@ class DecoderTestCase(unittest.TestCase):
         print(f"Running {__class__} with DATA_DIR={data_path}")
 
         # load test files
-        # load time and number of tokens for dumped acoustic scores
+        # load time and number of tokens for dumped emitting model scores
         T, N = load_tn(os.path.join(data_path, "TN.bin"))
         # load emissions [Batch=1, Time, Ntokens]
         emissions = load_emissions(os.path.join(data_path, "emission.bin"), T, N)
@@ -119,7 +119,7 @@ class DecoderTestCase(unittest.TestCase):
         word_dict = create_word_dict(lexicon)
         # create w2l dict with tokens set (letters in this example)
         token_dict = Dictionary(os.path.join(data_path, "letters.lst"))
-        # add repetition symbol as soon as we have ASG acoustic model
+        # add repetition symbol as soon as we have ASG emitting model
         token_dict.add_entry("<1>")
         # create Kenlm language model
         lm = KenLM(os.path.join(data_path, "lm.arpa"), word_dict)
@@ -216,7 +216,7 @@ class DecoderTestCase(unittest.TestCase):
                 prediction.append(token_dict.get_entry(idx))
             prediction = " ".join(prediction)
             print(
-                f"score={results[i].score} amScore={results[i].amScore} lmScore={results[i].lmScore} prediction='{prediction}'"
+                f"score={results[i].score} emittingModelScore={results[i].emittingModelScore} lmScore={results[i].lmScore} prediction='{prediction}'"
             )
 
         self.assertEqual(len(results), 16)

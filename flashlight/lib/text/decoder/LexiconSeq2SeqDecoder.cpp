@@ -41,7 +41,7 @@ void LexiconSeq2SeqDecoder::decodeStep(const float* emissions, int T, int N) {
     rawY_.clear();
     rawPrevStates_.clear();
     for (const LexiconSeq2SeqDecoderState& prevHyp : hyp_[t]) {
-      const AMStatePtr& prevState = prevHyp.amState;
+      const EmittingModelStatePtr& prevState = prevHyp.emittingModelState;
       if (prevHyp.token == eos_) {
         continue;
       }
@@ -52,13 +52,13 @@ void LexiconSeq2SeqDecoder::decodeStep(const float* emissions, int T, int N) {
       break;
     }
 
-    std::vector<std::vector<float>> amScores;
-    std::vector<AMStatePtr> outStates;
+    std::vector<std::vector<float>> emittingModelScores;
+    std::vector<EmittingModelStatePtr> outStates;
 
-    std::tie(amScores, outStates) =
-        amUpdateFunc_(emissions, N, T, rawY_, rawPrevStates_, t);
+    std::tie(emittingModelScores, outStates) =
+        EmittingModelUpdateFunc_(emissions, N, T, rawY_, rawPrevStates_, t);
 
-    std::vector<size_t> idx(amScores.back().size());
+    std::vector<size_t> idx(emittingModelScores.back().size());
 
     // Generate new hypothesis
     for (int hypo = 0, validHypo = 0; hypo < hyp_[t].size(); hypo++) {
@@ -76,12 +76,12 @@ void LexiconSeq2SeqDecoder::decodeStep(const float* emissions, int T, int N) {
             eos_,
             -1,
             nullptr,
-            prevHyp.amScore,
+            prevHyp.emittingModelScore,
             prevHyp.lmScore);
         continue;
       }
 
-      const AMStatePtr& outState = outStates[validHypo];
+      const EmittingModelStatePtr& outState = outStates[validHypo];
       if (!outState) {
         validHypo++;
         continue;
@@ -92,21 +92,24 @@ void LexiconSeq2SeqDecoder::decodeStep(const float* emissions, int T, int N) {
           prevLex == lexicon_->getRoot() ? 0 : prevLex->maxScore;
 
       std::iota(idx.begin(), idx.end(), 0);
-      if (amScores[validHypo].size() > opt_.beamSizeToken) {
+      if (emittingModelScores[validHypo].size() > opt_.beamSizeToken) {
         std::partial_sort(
             idx.begin(),
             idx.begin() + opt_.beamSizeToken,
             idx.end(),
-            [&amScores, &validHypo](const size_t& l, const size_t& r) {
-              return amScores[validHypo][l] > amScores[validHypo][r];
+            [&emittingModelScores, &validHypo](
+                const size_t& l, const size_t& r) {
+              return emittingModelScores[validHypo][l] >
+                  emittingModelScores[validHypo][r];
             });
       }
 
-      for (int r = 0;
-           r < std::min(amScores[validHypo].size(), (size_t)opt_.beamSizeToken);
+      for (int r = 0; r <
+           std::min(emittingModelScores[validHypo].size(),
+                    (size_t)opt_.beamSizeToken);
            r++) {
         int n = idx[r];
-        double amScore = amScores[validHypo][n];
+        double emittingModelScore = emittingModelScores[validHypo][n];
 
         /* (1) Try eos */
         if (n == eos_ && (prevLex == lexicon_->getRoot())) {
@@ -123,14 +126,15 @@ void LexiconSeq2SeqDecoder::decodeStep(const float* emissions, int T, int N) {
               candidates_,
               candidatesBestScore_,
               opt_.beamThreshold,
-              prevHyp.score + amScore + opt_.eosScore + opt_.lmWeight * lmScore,
+              prevHyp.score + emittingModelScore + opt_.eosScore +
+                  opt_.lmWeight * lmScore,
               lmState,
               lexicon_->getRoot(),
               &prevHyp,
               n,
               -1,
               nullptr,
-              prevHyp.amScore + amScore,
+              prevHyp.emittingModelScore + emittingModelScore,
               prevHyp.lmScore + lmScore);
         }
 
@@ -154,14 +158,14 @@ void LexiconSeq2SeqDecoder::decodeStep(const float* emissions, int T, int N) {
                 candidates_,
                 candidatesBestScore_,
                 opt_.beamThreshold,
-                prevHyp.score + amScore + opt_.lmWeight * lmScore,
+                prevHyp.score + emittingModelScore + opt_.lmWeight * lmScore,
                 lmState,
                 lex.get(),
                 &prevHyp,
                 n,
                 -1,
                 outState,
-                prevHyp.amScore + amScore,
+                prevHyp.emittingModelScore + emittingModelScore,
                 prevHyp.lmScore + lmScore);
 
             // If we got a true word
@@ -176,7 +180,7 @@ void LexiconSeq2SeqDecoder::decodeStep(const float* emissions, int T, int N) {
                     candidates_,
                     candidatesBestScore_,
                     opt_.beamThreshold,
-                    prevHyp.score + amScore + opt_.wordScore +
+                    prevHyp.score + emittingModelScore + opt_.wordScore +
                         opt_.lmWeight * lmScore,
                     lmState,
                     lexicon_->getRoot(),
@@ -184,7 +188,7 @@ void LexiconSeq2SeqDecoder::decodeStep(const float* emissions, int T, int N) {
                     n,
                     word,
                     outState,
-                    prevHyp.amScore + amScore,
+                    prevHyp.emittingModelScore + emittingModelScore,
                     prevHyp.lmScore + lmScore);
                 if (isLmToken_) {
                   break;

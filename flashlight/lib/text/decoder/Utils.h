@@ -9,8 +9,11 @@
 
 #include <algorithm>
 #include <cmath>
+#include <functional>
 #include <limits>
+#include <memory>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "flashlight/lib/text/decoder/lm/LM.h"
@@ -26,7 +29,7 @@ const int kLookBackLimit = 100;
 
 struct DecodeResult {
   double score;
-  double amScore;
+  double emittingModelScore;
   double lmScore;
   std::vector<int> words;
   std::vector<int> tokens;
@@ -34,6 +37,17 @@ struct DecodeResult {
   explicit DecodeResult(int length = 0)
       : score(0), words(length, -1), tokens(length, -1) {}
 };
+
+using EmittingModelStatePtr = std::shared_ptr<void>;
+using EmittingModelUpdateFunc = std::function<std::pair<
+    std::vector<std::vector<float>>,
+    std::vector<EmittingModelStatePtr>>(
+    const float*,
+    const int,
+    const int,
+    const std::vector<int>&,
+    const std::vector<EmittingModelStatePtr>&,
+    int&)>;
 
 /* ===================== Candidate-related operations ===================== */
 
@@ -154,7 +168,7 @@ DecodeResult getHypothesis(const DecoderState* node, const int finalFrame) {
 
   DecodeResult res(finalFrame + 1);
   res.score = node_->score;
-  res.amScore = node_->amScore;
+  res.emittingModelScore = node_->emittingModelScore;
   res.lmScore = node_->lmScore;
 
   int i = 0;

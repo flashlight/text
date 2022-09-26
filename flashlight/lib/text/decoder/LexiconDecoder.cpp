@@ -66,12 +66,12 @@ void LexiconDecoder::decodeStep(const float* emissions, int T, int N) {
           continue;
         }
         const TrieNodePtr& lex = iter->second;
-        double amScore = emissions[t * N + n];
+        double emittingModelScore = emissions[t * N + n];
         if (nDecodedFrames_ + t > 0 &&
             opt_.criterionType == CriterionType::ASG) {
-          amScore += transitions_[n * N + prevIdx];
+          emittingModelScore += transitions_[n * N + prevIdx];
         }
-        double score = prevHyp.score + amScore;
+        double score = prevHyp.score + emittingModelScore;
         if (n == sil_) {
           score += opt_.silScore;
         }
@@ -104,7 +104,7 @@ void LexiconDecoder::decodeStep(const float* emissions, int T, int N) {
                 n,
                 -1,
                 false, // prevBlank
-                prevHyp.amScore + amScore,
+                prevHyp.emittingModelScore + emittingModelScore,
                 prevHyp.lmScore + lmScore);
           }
         }
@@ -137,7 +137,7 @@ void LexiconDecoder::decodeStep(const float* emissions, int T, int N) {
               n,
               label,
               false, // prevBlank
-              prevHyp.amScore + amScore,
+              prevHyp.emittingModelScore + emittingModelScore,
               prevHyp.lmScore + lmScore);
         }
 
@@ -159,7 +159,7 @@ void LexiconDecoder::decodeStep(const float* emissions, int T, int N) {
               n,
               unk_,
               false, // prevBlank
-              prevHyp.amScore + amScore,
+              prevHyp.emittingModelScore + emittingModelScore,
               prevHyp.lmScore + lmScore);
         }
       }
@@ -168,12 +168,12 @@ void LexiconDecoder::decodeStep(const float* emissions, int T, int N) {
       if (opt_.criterionType != CriterionType::CTC || !prevHyp.prevBlank ||
           prevLex == lexicon_->getRoot()) {
         int n = prevLex == lexicon_->getRoot() ? sil_ : prevIdx;
-        double amScore = emissions[t * N + n];
+        double emittingModelScore = emissions[t * N + n];
         if (nDecodedFrames_ + t > 0 &&
             opt_.criterionType == CriterionType::ASG) {
-          amScore += transitions_[n * N + prevIdx];
+          emittingModelScore += transitions_[n * N + prevIdx];
         }
-        double score = prevHyp.score + amScore;
+        double score = prevHyp.score + emittingModelScore;
         if (n == sil_) {
           score += opt_.silScore;
         }
@@ -189,26 +189,26 @@ void LexiconDecoder::decodeStep(const float* emissions, int T, int N) {
             n,
             -1,
             false, // prevBlank
-            prevHyp.amScore + amScore,
+            prevHyp.emittingModelScore + emittingModelScore,
             prevHyp.lmScore);
       }
 
       /* (3) CTC only, try blank */
       if (opt_.criterionType == CriterionType::CTC) {
         int n = blank_;
-        double amScore = emissions[t * N + n];
+        double emittingModelScore = emissions[t * N + n];
         candidatesAdd(
             candidates_,
             candidatesBestScore_,
             opt_.beamThreshold,
-            prevHyp.score + amScore,
+            prevHyp.score + emittingModelScore,
             prevHyp.lmState,
             prevLex,
             &prevHyp,
             n,
             -1,
             true, // prevBlank
-            prevHyp.amScore + amScore,
+            prevHyp.emittingModelScore + emittingModelScore,
             prevHyp.lmScore);
       }
       // finish proposing
@@ -257,7 +257,7 @@ void LexiconDecoder::decodeEnd() {
           sil_,
           -1,
           false, // prevBlank
-          prevHyp.amScore,
+          prevHyp.emittingModelScore,
           prevHyp.lmScore + lmScore);
     }
   }
