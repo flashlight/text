@@ -139,7 +139,7 @@ Finally, we can run lexicon-based decoder:
     transitions = numpy.zeros((token_dict.index_size(), token_dict.index_size()) # for ASG fill up with correct values
     is_token_lm = False # we use word-level LM
     decoder = LexiconDecoder(options, trie, lm, sil_idx, blank_idx, unk_idx, transitions, is_token_lm)
-    # emissions is numpy.array of acoustic model predictions with shape [T, N], where T is time, N is number of tokens
+    # emissions is numpy.array of emitting model predictions with shape [T, N], where T is time, N is number of tokens
     results = decoder.decode(emissions.ctypes.data, T, N)
     # results[i].tokens contains tokens sequence (with length T)
     # results[i].score contains score of the hypothesis

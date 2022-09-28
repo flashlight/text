@@ -56,10 +56,10 @@ void LexiconFreeDecoder::decodeStep(const float* emissions, int T, int N) {
 
       for (int r = 0; r < std::min(opt_.beamSizeToken, N); ++r) {
         int n = idx[r];
-        double amScore = emissions[t * N + n];
+        double emittingModelScore = emissions[t * N + n];
         if (nDecodedFrames_ + t > 0 &&
             opt_.criterionType == CriterionType::ASG) {
-          amScore += transitions_[n * N + prevIdx];
+          emittingModelScore += transitions_[n * N + prevIdx];
         }
         double score = prevHyp.score + emissions[t * N + n];
         if (n == sil_) {
@@ -81,7 +81,7 @@ void LexiconFreeDecoder::decodeStep(const float* emissions, int T, int N) {
               &prevHyp,
               n,
               false, // prevBlank
-              prevHyp.amScore + amScore,
+              prevHyp.emittingModelScore + emittingModelScore,
               prevHyp.lmScore + lmScore);
         } else if (opt_.criterionType == CriterionType::CTC && n == blank_) {
           candidatesAdd(
@@ -93,7 +93,7 @@ void LexiconFreeDecoder::decodeStep(const float* emissions, int T, int N) {
               &prevHyp,
               n,
               true, // prevBlank
-              prevHyp.amScore + amScore,
+              prevHyp.emittingModelScore + emittingModelScore,
               prevHyp.lmScore);
         } else {
           candidatesAdd(
@@ -105,7 +105,7 @@ void LexiconFreeDecoder::decodeStep(const float* emissions, int T, int N) {
               &prevHyp,
               n,
               false, // prevBlank
-              prevHyp.amScore + amScore,
+              prevHyp.emittingModelScore + emittingModelScore,
               prevHyp.lmScore);
         }
       }
@@ -142,7 +142,7 @@ void LexiconFreeDecoder::decodeEnd() {
         &prevHyp,
         sil_,
         false, // prevBlank
-        prevHyp.amScore,
+        prevHyp.emittingModelScore,
         prevHyp.lmScore + lmScore);
   }
 

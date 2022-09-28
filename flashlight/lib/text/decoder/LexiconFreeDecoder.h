@@ -36,7 +36,7 @@ struct LexiconFreeDecoderState {
   int token; // Label of token
   bool prevBlank; // If previous hypothesis is blank (for CTC only)
 
-  double amScore; // Accumulated AM score so far
+  double emittingModelScore; // Accumulated AM score so far
   double lmScore; // Accumulated LM score so far
 
   LexiconFreeDecoderState(
@@ -45,14 +45,14 @@ struct LexiconFreeDecoderState {
       const LexiconFreeDecoderState* parent,
       const int token,
       const bool prevBlank = false,
-      const double amScore = 0,
+      const double emittingModelScore = 0,
       const double lmScore = 0)
       : score(score),
         lmState(lmState),
         parent(parent),
         token(token),
         prevBlank(prevBlank),
-        amScore(amScore),
+        emittingModelScore(emittingModelScore),
         lmScore(lmScore) {}
 
   LexiconFreeDecoderState()
@@ -61,7 +61,7 @@ struct LexiconFreeDecoderState {
         parent(nullptr),
         token(-1),
         prevBlank(false),
-        amScore(0.),
+        emittingModelScore(0.),
         lmScore(0.) {}
 
   int compareNoScoreStates(const LexiconFreeDecoderState* node) const {
@@ -92,7 +92,7 @@ struct LexiconFreeDecoderState {
  * AM(W) + lmWeight_ * log(P_{lm}(W)) + silScore_ * |{i| pi_i = <sil>}|
  *
  * where P_{lm}(W) is the language model score, pi_i is the value for the i-th
- * frame in the path leading to W and AM(W) is the (unnormalized) acoustic model
+ * frame in the path leading to W and AM(W) is the (unnormalized) emitting model
  * score of the transcription W. We are allowed to generate words from all the
  * possible combination of tokens.
  */
