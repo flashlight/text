@@ -107,7 +107,8 @@ setup(
     author_email="oncall+fair_speech@xmail.facebook.com",
     description="Flashlight Text bindings for python",
     long_description="",
-    packages=["flashlight", "flashlight.lib", "flashlight.lib.text"],
+    namespace_packages=["flashlight", "flashlight.lib"],
+    packages=["flashlight.lib.text"],
     ext_modules=[
         CMakeExtension("flashlight.lib.text.decoder"),
         CMakeExtension("flashlight.lib.text.dictionary"),
