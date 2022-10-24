@@ -56,7 +56,7 @@ void LexiconSeq2SeqDecoder::decodeStep(const float* emissions, int T, int N) {
     std::vector<EmittingModelStatePtr> outStates;
 
     std::tie(emittingModelScores, outStates) =
-        EmittingModelUpdateFunc_(emissions, N, T, rawY_, rawPrevStates_, t);
+        emittingModelUpdateFunc_(emissions, N, T, rawY_, rawPrevStates_, t);
 
     std::vector<size_t> idx(emittingModelScores.back().size());
 
