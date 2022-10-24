@@ -247,15 +247,24 @@ PYBIND11_MODULE(flashlight_lib_text_decoder, m) {
 
   // NB: `decode` and `decodeStep` expect raw emissions pointers.
   py::class_<LexiconDecoder>(m, "LexiconDecoder")
-      .def(py::init<
-           LexiconDecoderOptions,
-           const TriePtr,
-           const LMPtr,
-           const int,
-           const int,
-           const int,
-           const std::vector<float>&,
-           const bool>())
+      .def(
+          py::init<
+              LexiconDecoderOptions,
+              const TriePtr,
+              const LMPtr,
+              const int,
+              const int,
+              const int,
+              const std::vector<float>&,
+              const bool>(),
+          "options"_a,
+          "trie"_a,
+          "lm"_a,
+          "sil_token_idx"_a,
+          "blank_token_idx"_a,
+          "unk_token_idx"_a,
+          "transitions"_a,
+          "is_token_lm"_a)
       .def("decode_begin", &LexiconDecoder::decodeBegin)
       .def(
           "decode_step",
@@ -273,12 +282,18 @@ PYBIND11_MODULE(flashlight_lib_text_decoder, m) {
       .def("get_all_final_hypothesis", &LexiconDecoder::getAllFinalHypothesis);
 
   py::class_<LexiconFreeDecoder>(m, "LexiconFreeDecoder")
-      .def(py::init<
-           LexiconFreeDecoderOptions,
-           const LMPtr,
-           const int,
-           const int,
-           const std::vector<float>&>())
+      .def(
+          py::init<
+              LexiconFreeDecoderOptions,
+              const LMPtr,
+              const int,
+              const int,
+              const std::vector<float>&>(),
+          "options"_a,
+          "lm"_a,
+          "sil_token_idx"_a,
+          "blank_token_idx"_a,
+          "transitions"_a)
       .def("decode_begin", &LexiconFreeDecoder::decodeBegin)
       .def(
           "decode_step",
