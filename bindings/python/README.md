@@ -125,7 +125,7 @@ for word, spellings in lexicon.items():
         spelling_idxs = tkn_to_idx(spelling, token_dict, 1)
         trie.insert(spelling_idxs, usr_idx, score)
 
-trie.smear(SmearingMode.MAX) # propagate word score to each spelling node to have some lm proxy score in each node.
+    trie.smear(SmearingMode.MAX) # propagate word score to each spelling node to have some lm proxy score in each node.
 ```
 
 Finally, we can run lexicon-based decoder:
