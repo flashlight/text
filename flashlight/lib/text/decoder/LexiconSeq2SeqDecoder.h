@@ -113,14 +113,14 @@ class LexiconSeq2SeqDecoder : public Decoder {
       const TriePtr& lexicon,
       const LMPtr& lm,
       const int eos,
-      EmittingModelUpdateFunc EmittingModelUpdateFunc,
+      EmittingModelUpdateFunc emittingModelUpdateFunc,
       const int maxOutputLength,
       const bool isLmToken)
       : opt_(std::move(opt)),
         lm_(lm),
         lexicon_(lexicon),
         eos_(eos),
-        EmittingModelUpdateFunc_(EmittingModelUpdateFunc),
+        emittingModelUpdateFunc_(emittingModelUpdateFunc),
         maxOutputLength_(maxOutputLength),
         isLmToken_(isLmToken) {}
 
@@ -139,7 +139,7 @@ class LexiconSeq2SeqDecoder : public Decoder {
   LMPtr lm_;
   TriePtr lexicon_;
   int eos_;
-  EmittingModelUpdateFunc EmittingModelUpdateFunc_;
+  EmittingModelUpdateFunc emittingModelUpdateFunc_;
   std::vector<int> rawY_;
   std::vector<EmittingModelStatePtr> rawPrevStates_;
   int maxOutputLength_;

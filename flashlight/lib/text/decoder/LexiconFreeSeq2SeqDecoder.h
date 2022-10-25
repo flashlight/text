@@ -94,12 +94,12 @@ class LexiconFreeSeq2SeqDecoder : public Decoder {
       LexiconFreeSeq2SeqDecoderOptions opt,
       const LMPtr& lm,
       const int eos,
-      EmittingModelUpdateFunc EmittingModelUpdateFunc,
+      EmittingModelUpdateFunc emittingModelUpdateFunc,
       const int maxOutputLength)
       : opt_(std::move(opt)),
         lm_(lm),
         eos_(eos),
-        EmittingModelUpdateFunc_(EmittingModelUpdateFunc),
+        emittingModelUpdateFunc_(emittingModelUpdateFunc),
         maxOutputLength_(maxOutputLength) {}
 
   void decodeStep(const float* emissions, int T, int N) override;
@@ -116,7 +116,7 @@ class LexiconFreeSeq2SeqDecoder : public Decoder {
   LexiconFreeSeq2SeqDecoderOptions opt_;
   LMPtr lm_;
   int eos_;
-  EmittingModelUpdateFunc EmittingModelUpdateFunc_;
+  EmittingModelUpdateFunc emittingModelUpdateFunc_;
   std::vector<int> rawY_;
   std::vector<EmittingModelStatePtr> rawPrevStates_;
   int maxOutputLength_;
