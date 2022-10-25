@@ -189,15 +189,30 @@ class DecoderTestCase(unittest.TestCase):
         #                 word_score, unk_score, sil_score,
         #                 log_add, criterion_type (ASG or CTC))
         opts = LexiconDecoderOptions(
-            2500, 25000, 100.0, 2.0, 2.0, -math.inf, -1, False, CriterionType.ASG
+            beam_size=2500,
+            beam_size_token=25000,
+            beam_threshold=100.0,
+            lm_weight=2.0,
+            word_score=2.0,
+            unk_score=-math.inf,
+            sil_score=-1,
+            log_add=False,
+            criterion_type=CriterionType.ASG,
         )
 
         # define lexicon beam-search decoder with word-level lm
         # LexiconDecoder(decoder options, trie, lm, silence index,
         #                blank index (for CTC), unk index,
-        #                transitiona matrix, is token-level lm)
+        #                transitions matrix, is token-level lm)
         decoder = LexiconDecoder(
-            opts, trie, lm, separator_idx, -1, unk_idx, transitions, False
+            options=opts,
+            trie=trie,
+            lm=lm,
+            sil_token_idx=separator_idx,
+            blank_token_idx=-1,
+            unk_token_idx=unk_idx,
+            transitions=transitions,
+            is_token_lm=False,
         )
         # run decoding
         # decoder.decode(emissions, Time, Ntokens)
