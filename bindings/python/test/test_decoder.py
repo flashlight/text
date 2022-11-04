@@ -11,6 +11,7 @@ LICENSE file in the root directory of this source tree.
 
 import math
 import os
+import pickle
 import struct
 import unittest
 
@@ -19,8 +20,11 @@ from flashlight.lib.text.decoder import (
     CriterionType,
     LexiconDecoder,
     LexiconDecoderOptions,
+    LexiconFreeDecoder,
+    LexiconFreeDecoderOptions,
     SmearingMode,
     Trie,
+    ZeroLM,
 )
 from flashlight.lib.text.dictionary import (
     create_word_dict,
@@ -214,6 +218,7 @@ class DecoderTestCase(unittest.TestCase):
             transitions=transitions,
             is_token_lm=False,
         )
+
         # run decoding
         # decoder.decode(emissions, Time, Ntokens)
         # result is a list of sorted hypothesis, 0-index is the best hypothesis
@@ -238,6 +243,94 @@ class DecoderTestCase(unittest.TestCase):
         hyp_score_target = [-284.0998, -284.108, -284.119, -284.127, -284.296]
         for i in range(min(5, len(results))):
             self.assertAlmostEqual(results[i].score, hyp_score_target[i], places=3)
+
+
+class DecoderPickleTestCase(unittest.TestCase):
+    def cmp_options(self, lhs, rhs):
+        self.assertEqual(lhs.beam_size, rhs.beam_size)
+        self.assertEqual(lhs.beam_size_token, rhs.beam_size_token)
+        self.assertEqual(lhs.beam_threshold, rhs.beam_threshold)
+        self.assertEqual(lhs.lm_weight, rhs.lm_weight)
+        self.assertEqual(lhs.sil_score, rhs.sil_score)
+        self.assertEqual(lhs.log_add, rhs.log_add)
+        self.assertEqual(lhs.criterion_type, rhs.criterion_type)
+
+    def test(self):
+        beam_size = 3
+        beam_size_token = 5
+        beam_threshold = 10.0
+        lm_weight = 7.0
+        word_score = 3.0
+        unk_score = 2.0
+        sil_score = 5.0
+        log_add = True
+        criterion_type = CriterionType.CTC
+        lm = ZeroLM()
+        sil_token_idx = 4
+        blank_token_idx = 22
+        transitions = [1.0, 4.0, 5.0, 9.0]
+
+        # ]----- non-autoregressive decoding
+        # lexicon-free
+        lex_free_opts = LexiconFreeDecoderOptions(
+            beam_size=beam_size,
+            beam_size_token=beam_size_token,
+            beam_threshold=beam_threshold,
+            lm_weight=lm_weight,
+            sil_score=sil_score,
+            log_add=log_add,
+            criterion_type=criterion_type,
+        )
+        pickled = pickle.dumps(lex_free_opts)
+        _lex_free_opts = pickle.loads(pickled)
+        self.cmp_options(_lex_free_opts, lex_free_opts)
+
+        lex_free_decoder = LexiconFreeDecoder(
+            options=lex_free_opts,
+            lm=lm,
+            sil_token_idx=sil_token_idx,
+            blank_token_idx=blank_token_idx,
+            transitions=transitions,
+        )
+        pickled = pickle.dumps(lex_free_decoder)
+        _lex_free_decoder = pickle.loads(pickled)
+        self.assertEqual(
+            _lex_free_decoder.get_sil_idx(), lex_free_decoder.get_sil_idx()
+        )
+        self.assertEqual(
+            _lex_free_decoder.get_blank_idx(), lex_free_decoder.get_blank_idx()
+        )
+        self.assertEqual(
+            _lex_free_decoder.get_transitions(), lex_free_decoder.get_transitions()
+        )
+        self.cmp_options(
+            _lex_free_decoder.get_options(), lex_free_decoder.get_options()
+        )
+
+        # lexicon-based
+        lex_ops = LexiconDecoderOptions(
+            beam_size=beam_size,
+            beam_size_token=beam_size_token,
+            beam_threshold=beam_threshold,
+            lm_weight=lm_weight,
+            word_score=word_score,
+            unk_score=unk_score,
+            sil_score=sil_score,
+            log_add=log_add,
+            criterion_type=criterion_type,
+        )
+        pickled = pickle.dumps(lex_ops)
+        _lex_ops = pickle.loads(pickled)
+        self.assertEqual(_lex_ops.beam_size, lex_ops.beam_size)
+        self.assertEqual(_lex_ops.beam_size_token, lex_ops.beam_size_token)
+        self.assertEqual(_lex_ops.beam_threshold, lex_ops.beam_threshold)
+        self.assertEqual(_lex_ops.lm_weight, lex_ops.lm_weight)
+        self.assertEqual(_lex_ops.word_score, lex_ops.word_score)
+        self.assertEqual(_lex_ops.unk_score, lex_ops.unk_score)
+        self.assertEqual(_lex_ops.sil_score, lex_ops.sil_score)
+        self.assertEqual(_lex_ops.log_add, lex_ops.log_add)
+        self.assertEqual(_lex_ops.criterion_type, lex_ops.criterion_type)
+        # serialization of lexicon_decoder is currently unsupported
 
 
 if __name__ == "__main__":

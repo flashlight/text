@@ -95,7 +95,7 @@ class PyLM : public LM {
  *          if outstate not in self.mapping_states:
  *              self.mapping_states[outstate] = self.mapping_states[state] + 1
  *          return (outstate, -1)
- *```
+ * ```
  */
 void LexiconDecoder_decodeStep(
     LexiconDecoder& decoder,
@@ -176,7 +176,8 @@ PYBIND11_MODULE(flashlight_lib_text_decoder, m) {
 
   py::enum_<CriterionType>(m, "CriterionType")
       .value("ASG", CriterionType::ASG)
-      .value("CTC", CriterionType::CTC);
+      .value("CTC", CriterionType::CTC)
+      .value("S2S", CriterionType::S2S);
 
   py::class_<LexiconDecoderOptions>(m, "LexiconDecoderOptions")
       .def(
@@ -207,7 +208,39 @@ PYBIND11_MODULE(flashlight_lib_text_decoder, m) {
       .def_readwrite("unk_score", &LexiconDecoderOptions::unkScore)
       .def_readwrite("sil_score", &LexiconDecoderOptions::silScore)
       .def_readwrite("log_add", &LexiconDecoderOptions::logAdd)
-      .def_readwrite("criterion_type", &LexiconDecoderOptions::criterionType);
+      .def_readwrite("criterion_type", &LexiconDecoderOptions::criterionType)
+      .def(py::pickle(
+          [](const LexiconDecoderOptions& p) { // __getstate__
+            return py::make_tuple(
+                p.beamSize,
+                p.beamSizeToken,
+                p.beamThreshold,
+                p.lmWeight,
+                p.wordScore,
+                p.unkScore,
+                p.silScore,
+                p.logAdd,
+                p.criterionType);
+          },
+          [](py::tuple t) { // __setstate__
+            if (t.size() != 9) {
+              throw std::runtime_error(
+                  "Cannot run __setstate__ on LexiconDecoderOptions - "
+                  "insufficient arguments provided.");
+            }
+            LexiconDecoderOptions opts = {
+                t[0].cast<int>(), // beamSize
+                t[1].cast<int>(), // beamSizeToken
+                t[2].cast<double>(), // beamThreshold
+                t[3].cast<double>(), // lmWeight
+                t[4].cast<double>(), // wordScore
+                t[5].cast<double>(), // unkScore
+                t[6].cast<double>(), // silScore
+                t[7].cast<bool>(), // logAdd
+                t[8].cast<CriterionType>() // criterionType
+            };
+            return opts;
+          }));
 
   py::class_<LexiconFreeDecoderOptions>(m, "LexiconFreeDecoderOptions")
       .def(
@@ -235,7 +268,35 @@ PYBIND11_MODULE(flashlight_lib_text_decoder, m) {
       .def_readwrite("sil_score", &LexiconFreeDecoderOptions::silScore)
       .def_readwrite("log_add", &LexiconFreeDecoderOptions::logAdd)
       .def_readwrite(
-          "criterion_type", &LexiconFreeDecoderOptions::criterionType);
+          "criterion_type", &LexiconFreeDecoderOptions::criterionType)
+      .def(py::pickle(
+          [](const LexiconFreeDecoderOptions& p) { // __getstate__
+            return py::make_tuple(
+                p.beamSize,
+                p.beamSizeToken,
+                p.beamThreshold,
+                p.lmWeight,
+                p.silScore,
+                p.logAdd,
+                p.criterionType);
+          },
+          [](py::tuple t) { // __setstate__
+            if (t.size() != 7) {
+              throw std::runtime_error(
+                  "Cannot run __setstate__ on LexiconFreeDecoderOptions - "
+                  "insufficient arguments provided.");
+            }
+            LexiconFreeDecoderOptions opts = {
+                t[0].cast<int>(), // beamSize
+                t[1].cast<int>(), // beamSizeToken
+                t[2].cast<double>(), // beamThreshold
+                t[3].cast<double>(), // lmWeight
+                t[4].cast<double>(), // silScore
+                t[5].cast<bool>(), // logAdd
+                t[6].cast<CriterionType>() // criterionType
+            };
+            return opts;
+          }));
 
   py::class_<DecodeResult>(m, "DecodeResult")
       .def(py::init<int>(), "length"_a)
@@ -310,5 +371,44 @@ PYBIND11_MODULE(flashlight_lib_text_decoder, m) {
           "look_back"_a = 0)
       .def(
           "get_all_final_hypothesis",
-          &LexiconFreeDecoder::getAllFinalHypothesis);
+          &LexiconFreeDecoder::getAllFinalHypothesis)
+      .def("get_options", &LexiconFreeDecoder::getOptions)
+      .def("get_sil_idx", &LexiconFreeDecoder::getSilIdx)
+      .def("get_blank_idx", &LexiconFreeDecoder::getBlankIdx)
+      .def("get_transitions", &LexiconFreeDecoder::getTransitions)
+      .def(
+          "get_options",
+          &LexiconFreeDecoder::getOptions)
+      .def(py::pickle(
+          [](const LexiconFreeDecoder& p) { // __getstate__
+            if (p.getAllFinalHypothesis().size() != 0) {
+              throw std::runtime_error(
+                  "LexiconFreeDecoder: cannot pickle decoder that has state");
+            }
+            if (!std::dynamic_pointer_cast<ZeroLM>(p.getLMPtr())) {
+              throw std::runtime_error(
+                  "LexiconFreeDecoder: cannot pickle a decoder with an "
+                  "integrated language model that is not ZeroLM");
+            }
+            return py::make_tuple(
+                p.getOptions(),
+                p.getSilIdx(),
+                p.getBlankIdx(),
+                p.getTransitions());
+          },
+          [](py::tuple t) { // __setstate__
+            if (t.size() != 4) {
+              throw std::runtime_error(
+                  "Cannot run __setstate__ on LexiconFreeDecoder - "
+                  "insufficient arguments provided.");
+            }
+
+            return LexiconFreeDecoder(
+                t[0].cast<LexiconFreeDecoderOptions>(), // options
+                std::make_shared<ZeroLM>(), // lm
+                t[1].cast<int>(), // silIdx
+                t[2].cast<int>(), // blankIdx
+                t[3].cast<std::vector<float>>() // transitions
+            );
+          }));
 }
