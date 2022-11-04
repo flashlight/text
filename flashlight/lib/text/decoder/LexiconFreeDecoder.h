@@ -126,6 +126,16 @@ class LexiconFreeDecoder : public Decoder {
 
   std::vector<DecodeResult> getAllFinalHypothesis() const override;
 
+  const LMPtr& getLMPtr() const;
+
+  int getSilIdx() const;
+
+  int getBlankIdx() const;
+
+  const LexiconFreeDecoderOptions& getOptions() const;
+
+  const std::vector<float>& getTransitions() const;
+
  protected:
   LexiconFreeDecoderOptions opt_;
   LMPtr lm_;

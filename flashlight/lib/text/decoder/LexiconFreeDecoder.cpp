@@ -158,8 +158,31 @@ void LexiconFreeDecoder::decodeEnd() {
 }
 
 std::vector<DecodeResult> LexiconFreeDecoder::getAllFinalHypothesis() const {
+  if (hyp_.size() == 0) {
+    return {};
+  }
   int finalFrame = nDecodedFrames_ - nPrunedFrames_;
   return getAllHypothesis(hyp_.find(finalFrame)->second, finalFrame);
+}
+
+const LMPtr& LexiconFreeDecoder::getLMPtr() const {
+  return lm_;
+}
+
+int LexiconFreeDecoder::getSilIdx() const {
+  return sil_;
+}
+
+int LexiconFreeDecoder::getBlankIdx() const {
+  return blank_;
+}
+
+const std::vector<float>& LexiconFreeDecoder::getTransitions() const {
+  return transitions_;
+}
+
+const LexiconFreeDecoderOptions& LexiconFreeDecoder::getOptions() const {
+  return opt_;
 }
 
 DecodeResult LexiconFreeDecoder::getBestHypothesis(int lookBack) const {
