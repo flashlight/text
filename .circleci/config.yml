@@ -7,35 +7,28 @@ macos_env: &macos_env
   environment:
     HOMEBREW_NO_AUTO_UPDATE: "1"
 
+gpu: &gpu
+  machine:
+    image: ubuntu-2004-cuda-11.4:202110-01
+  resource_class: gpu.nvidia.large
+
 orbs:
   win: circleci/windows@5.0.0
 
 commands:
   install_ubuntu_build_dependencies:
-    parameters:
-      use_kenlm:
-        type: string
     steps:
       - run:
           name: "Install Build Dependencies"
           command: |
             sudo apt -y update && \
             sudo apt -y install build-essential python3-dev python3-pip cmake
-      - when:
-          condition:
-            equal: ["ON", << parameters.use_kenlm >>]
-          steps:
-            - run:
-                name: "Install KenLM Build Dependencies"
-                command: |
-                  sudo apt -y install libboost-program-options-dev libboost-system-dev libboost-thread-dev \
-                  libboost-test-dev liblzma-dev libbz2-dev zlib1g-dev
   install_macos_build_dependencies:
     steps:
       - run:
           name: "Install Build Dependencies"
           command: |
-            brew install cmake googletest boost zlib bzip2 lzip
+            brew install cmake libomp googletest
   install_msvc_build_dependencies:
     steps:
       - run:
@@ -46,37 +39,14 @@ commands:
       - run:
           name: "Set PATH to find CMake"
           command: echo 'export PATH="$PATH:/c/Program Files/CMake/bin"' >> $BASH_ENV
-  install_kenlm:
+  build_flashlight_sequence:
     parameters:
-      platform:
-        type: string
-        default: "linux"
-    steps:
-      - run:
-          name: "Install KenLM"
-          command: |
-            git clone https://github.com/kpu/kenlm.git && cd kenlm
-            mkdir build
-            cmake -S . -B build -DBUILD_SHARED_LIBS=ON && \
-            cmake --build build --parallel && sudo cmake --install build
-      - when:
-          condition:
-            equal: ["linux", << parameters.platform >>]
-          steps:
-            - run:
-                name: "Configure shared lib paths"
-                command: sudo ldconfig
-  build_flashlight_text:
-    parameters:
-      use_kenlm:
+      use_cuda:
         type: string
         default: "ON"
       build_shared_libs:
         type: string
         default: "OFF"
-      build_standalone:
-        type: string
-        default: "ON"
       build_code_coverage:
         type: string
         default: "OFF"
@@ -85,14 +55,13 @@ commands:
         default: "linux"
     steps:
       - run:
-          name: "Build and Install Flashlight Text"
+          name: "Build and Install Flashlight Sequence"
           command: |
             mkdir build && \
             cmake -S . -B build \
               -DBUILD_SHARED_LIBS=<< parameters.build_shared_libs >> \
-              -DFL_TEXT_USE_KENLM=<< parameters.use_kenlm >> \
-              -DFL_TEXT_BUILD_STANDALONE=<< parameters.build_standalone >> \
-              -DFL_TEXT_CODE_COVERAGE=<< parameters.build_code_coverage >>
+              -DFL_SEQUENCE_USE_CUDA=<< parameters.use_cuda >> \
+              -DFL_SEQUENCE_CODE_COVERAGE=<< parameters.build_code_coverage >>
             cmake --build build --parallel
       # only test install with non-Windows platforms (TODO: fix this)
       - when:
@@ -113,7 +82,7 @@ commands:
                 command: sudo ldconfig
   install_python_bindings:
     parameters:
-      use_kenlm:
+      use_cuda:
         type: string
         default: "ON"
     steps:
@@ -123,17 +92,13 @@ commands:
             pip3 install packaging && \
             pip3 install numpy && \
             cd bindings/python && \
-            USE_KENLM=<< parameters.use_kenlm >> pip3 install -e .
+            USE_CUDA=<< parameters.use_cuda >> pip3 install -e .
   run_python_tests:
-    parameters:
-      use_kenlm:
-        type: string
-        default: "ON"
     steps:
       - run:
           name: "Run Python Binding Tests"
           command: |
-            cd bindings/python/test && USE_KENLM=<< parameters.use_kenlm >> \
+            cd bindings/python/test &&  \
             python3 -m unittest discover -v .
   test_with_external_project:
     parameters:
@@ -146,23 +111,20 @@ commands:
           command: |
             mkdir -p test_project && cd test_project && \
             echo -e "\
-              #include <flashlight/lib/text/dictionary/Dictionary.h> \n
-              #include <iostream>                                    \n
-              int main() {                                           \n
-                fl::lib::text::Dictionary myDict;                    \n
-                myDict.addEntry(\"A\", 1);                           \n
-                myDict.addEntry(\"B\", 2);                           \n
-                return 0;                                            \n
-              }                                                      \n
+              #include <flashlight/lib/sequence/criterion/cpu/ViterbiPath.h> \n
+              int main() {                                                   \n
+                using ViterbiPath = fl::lib::cpu::ViterbiPath<float>;        \n
+                return 0;                                                    \n
+              }                                                              \n
             " > main.cpp && \
             echo -e "\
-              cmake_minimum_required(VERSION 3.10)                            \n
-              project(test_project)                                           \n
-              set(CMAKE_CXX_STANDARD 17)                                      \n
-              set(CMAKE_CXX_STANDARD_REQUIRED ON)                             \n
-              add_executable(main main.cpp)                                   \n
-              find_package(flashlight-text CONFIG REQUIRED)                   \n
-              target_link_libraries(main PRIVATE flashlight::flashlight-text) \n
+              cmake_minimum_required(VERSION 3.10)                                \n
+              project(test_project)                                               \n
+              set(CMAKE_CXX_STANDARD 17)                                          \n
+              set(CMAKE_CXX_STANDARD_REQUIRED ON)                                 \n
+              add_executable(main main.cpp)                                       \n
+              find_package(flashlight-sequence CONFIG REQUIRED)                   \n
+              target_link_libraries(main PRIVATE flashlight::flashlight-sequence) \n
             " > CMakeLists.txt
       - run:
           name: Build dependent external project
@@ -184,40 +146,24 @@ commands:
             bash <(curl -s https://codecov.io/bash) -f coverage.info \
             -t $CODECOV_TOKEN \
             || echo 'Codecov did not collect coverage reports'
-
-jobs:
-  ubuntu_20_gcc_9:
+  run_ubuntu_20_gcc_9:
     parameters:
-      use_kenlm:
+      use_cuda:
         type: string
         default: "ON"
       build_shared_libs:
         type: string
         default: "OFF"
-      build_standalone:
-        type: string
-        default: "ON"
       run_codecov:
         type: string
         default: ""
-    docker:
-      - image: cimg/base:2021.04
     steps:
       - checkout
-      - install_ubuntu_build_dependencies:
-          use_kenlm: << parameters.use_kenlm >>
-      - when:
-          condition:
-            and:
-              - equal: ["OFF", << parameters.build_standalone >>]
-              - equal: ["ON", << parameters.use_kenlm >>]
-          steps:
-            - install_kenlm
-      - build_flashlight_text:
+      - install_ubuntu_build_dependencies
+      - build_flashlight_sequence:
           build_shared_libs: << parameters.build_shared_libs >>
-          use_kenlm: << parameters.use_kenlm >>
+          use_cuda: << parameters.use_cuda >>
           build_code_coverage: << parameters.run_codecov >>
-          build_standalone: << parameters.build_standalone >>
       - run:
           name: "Run C++ Tests"
           command: |
@@ -228,100 +174,106 @@ jobs:
           condition: << parameters.run_codecov >>
           steps:
             - run_codecov
-
-  ubuntu_20_gcc_9_python:
+  run_ubuntu_20_gcc_9_python:
     parameters:
-      use_kenlm:
+      use_cuda:
         type: string
         default: "ON"
-    docker:
-      - image: cimg/base:2021.04
     steps:
       - checkout
-      - install_ubuntu_build_dependencies:
-          use_kenlm: << parameters.use_kenlm >>
-      - when:
-          condition:
-            equal: ["ON", << parameters.use_kenlm >>]
-          steps:
-            - install_kenlm
+      - install_ubuntu_build_dependencies
       - install_python_bindings:
-          use_kenlm: << parameters.use_kenlm >>
-      - run_python_tests:
-          use_kenlm: << parameters.use_kenlm >>
+          use_cuda: << parameters.use_cuda >>
+      - run_python_tests
 
-  macos_clang_13:
+jobs:
+  ubuntu_20_gcc_9:
     parameters:
-      use_kenlm:
-        type: string
-        default: "ON"
       build_shared_libs:
         type: string
         default: "OFF"
-      build_standalone:
+      run_codecov:
         type: string
-        default: "ON"
+        default: ""
+    docker:
+      - image: cimg/base:2021.04
+    steps:
+      - run_ubuntu_20_gcc_9:
+          use_cuda: "OFF"
+          build_shared_libs: << parameters.build_shared_libs >>
+          run_codecov: << parameters.run_codecov >>
+
+  ubuntu_20_gcc_9_cuda:
+    parameters:
+      build_shared_libs:
+        type: string
+        default: "OFF"
+      run_codecov:
+        type: string
+        default: ""
+    <<: *gpu
+    steps:
+      - run_ubuntu_20_gcc_9:
+          use_cuda: "ON"
+          build_shared_libs: << parameters.build_shared_libs >>
+          run_codecov: << parameters.run_codecov >>
+
+  ubuntu_20_gcc_9_python:
+    docker:
+      - image: cimg/base:2021.04
+    steps:
+      - run_ubuntu_20_gcc_9_python:
+          use_cuda: "OFF"
+
+  ubuntu_20_gcc_9_python_cuda:
+    <<: *gpu
+    steps:
+      - run_ubuntu_20_gcc_9_python:
+          use_cuda: "ON"
+
+  macos_clang_13:
+    parameters:
+      build_shared_libs:
+        type: string
+        default: "OFF"
     <<: *macos_env
     shell: /bin/bash -eux -o pipefail
     steps:
       - checkout
       - install_macos_build_dependencies
-      - when:
-          condition:
-            and:
-              - equal: ["OFF", << parameters.build_standalone >>]
-              - equal: ["ON", << parameters.use_kenlm >>]
-          steps:
-            - install_kenlm:
-                platform: "macos"
-      - build_flashlight_text:
+      - build_flashlight_sequence:
           platform: "macos"
-          use_kenlm: << parameters.use_kenlm >>
+          use_cuda: "OFF"
           build_shared_libs: << parameters.build_shared_libs >>
-          build_standalone: << parameters.build_standalone >>
 
   macos_clang_13_python:
-    parameters:
-      use_kenlm:
-        type: string
-        default: "ON"
     <<: *macos_env
     shell: /bin/bash -eux -o pipefail
     steps:
       - checkout
       - install_macos_build_dependencies
-      - when:
-          condition:
-            equal: ["ON", << parameters.use_kenlm >>]
-          steps:
-            - install_kenlm:
-                platform: "macos"
       - install_python_bindings:
-          use_kenlm: << parameters.use_kenlm >>
-      - run_python_tests:
-          use_kenlm: << parameters.use_kenlm >>
+          use_cuda: "OFF"
+      - run_python_tests
 
   windows_msvc:
     parameters:
       build_shared_libs:
         type: string
         default: "OFF"
-      build_standalone:
-        type: string
-        default: "ON"
     executor:
       name: win/default
       shell: bash.exe
     steps:
       - checkout
       - install_msvc_build_dependencies
-      - build_flashlight_text:
+      - build_flashlight_sequence:
           platform: "windows"
-          use_kenlm: "OFF"
+          use_cuda: "OFF"
 
   windows_msvc_python:
     parameters:
-      use_kenlm:
+      use_cuda:
         type: string
         default: "OFF"
     executor:
@@ -331,46 +283,32 @@ jobs:
       - checkout
       - install_msvc_build_dependencies
       - install_python_bindings:
-          use_kenlm: "OFF"
+          use_cuda: "OFF"
 
 workflows:
   build-test:
     jobs:
       - ubuntu_20_gcc_9:
           name: "Ubuntu 20.04 gcc-9 static"
-          use_kenlm: "OFF"
       - ubuntu_20_gcc_9:
           name: "Ubuntu 20.04 gcc-9 shared"
-          use_kenlm: "OFF"
           build_shared_libs: "ON"
-      - ubuntu_20_gcc_9:
-          name: "Ubuntu 20.04 gcc-9 static + KenLM"
-          use_kenlm: "ON"
-      - ubuntu_20_gcc_9:
-          name: "Ubuntu 20.04 gcc-9 shared + KenLM"
-          use_kenlm: "ON"
+      - ubuntu_20_gcc_9_cuda:
+          name: "Ubuntu 20.04 gcc-9 static + CUDA"
+      - ubuntu_20_gcc_9_cuda:
+          name: "Ubuntu 20.04 gcc-9 shared + CUDA"
           build_shared_libs: "ON"
           run_codecov: "ON"
       - ubuntu_20_gcc_9_python:
           name: "Ubuntu 20.04 gcc-9 Python"
-          use_kenlm: "OFF"
-      - ubuntu_20_gcc_9_python:
-          name: "Ubuntu 20.04 gcc-9 Python + KenLM"
-          use_kenlm: "ON"
-      - ubuntu_20_gcc_9:
-          name: "Ubuntu 20.04 gcc-9 no-standalone - shared + KenLM"
-          use_kenlm: "ON"
-          build_shared_libs: "ON"
-          build_standalone: "OFF"
+      - ubuntu_20_gcc_9_python_cuda:
+          name: "Ubuntu 20.04 gcc-9 Python + CUDA"
       - macos_clang_13:
-          name: "macOS Clang 13 no-standalone - shared + KenLM"
-          use_kenlm: "ON"
+          name: "macOS Clang 13 - shared"
           build_shared_libs: "ON"
-          build_standalone: "OFF"
       - macos_clang_13_python:
-          name: "macOS Clang 13 Python + KenLM"
-          use_kenlm: "ON"
+          name: "macOS Clang 13 Python"
       - windows_msvc:
-          name: "Windows VS 17 2022 | MSVC 19.33 no-standalone"
+          name: "Windows VS 17 2022 | MSVC 19.33"
       - windows_msvc_python:
           name: "Windows VS 17 2022 | MSVC 19.33 Python"
