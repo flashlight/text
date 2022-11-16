@@ -38,16 +38,81 @@ struct DecodeResult {
       : score(0), words(length, -1), tokens(length, -1) {}
 };
 
+/**
+ * An opaque type used to represent stateful components of an autoregressive
+ * model that need to be maintained for incremental decoding.
+ *
+ * For example: consider an RNN, which has different hidden states depending on
+ * the prior state. This hidden state could be a single tensor, a struct
+ * containing tensors, or any arbitrary type.
+ */
 using EmittingModelStatePtr = std::shared_ptr<void>;
-using EmittingModelUpdateFunc = std::function<std::pair<
-    std::vector<std::vector<float>>,
-    std::vector<EmittingModelStatePtr>>(
-    const float*,
-    const int,
-    const int,
-    const std::vector<int>&,
-    const std::vector<EmittingModelStatePtr>&,
-    int&)>;
+
+/**
+ * A callback type used to represent a closure called for each step in
+ * autoregressive decoding.
+ *
+ * For each timestep in autoregressive coding, each potential candidate for the
+ * next timestep for each element in the beam needs to be scored. The size of
+ * the set of "current" autoregressive state used to score those candidates is
+ * equal to the number of candidates in the beam.
+ *
+ * Decoder state is intentionally not implemented to be thread-safe; for a given
+ * decoder instance in a single thread, closures of this type will not
+ * be invoked from multiple threads simultaneously.
+ *
+ * An example implementation of such a closure with optimizations for memory use
+ * and efficiency might peform the following steps:
+ * 1. Collect the emissions for decoder input (e.g. encoder output) at the first
+ *    time step, and save those in a buffer accessible to other invocations of
+ *    the update function.
+ * 2. Forward the candidate tokens through the next autoregressive step. For
+ *    systems that support batching, inferring scores for multiple candidate
+ *    tokens per beam entry (or even multiple beam entries) in parallel can
+ *    significantly improve decoding performance.
+ * 3. To conserve memory, autoregressive state should be carefully cleared after
+ *    it has been used. State can be cached by mapping it to the beam index in
+ *    which it was first conditioned upon for incremental scores, then cleared
+ *    after it was used for [batched] score computation.
+ */
+using EmittingModelUpdateFunc = std::function<
+    std::pair<
+        std::vector<std::vector<float>>, // A distribution of scores over tokens
+                                         // in the token set (inner vector) for
+                                         // each candidate in the beam (outer
+                                         // vector). This vector must have as
+                                         // many elements as there are
+                                         // candidates in the beam.
+        std::vector<EmittingModelStatePtr>> // A vector of emitting model state;
+                                            // each value represents the
+                                            // incremental state emitted by
+                                            // inference on an autoregressive
+                                            // mdoel with a particular token.
+                                            // The vector must have as many
+                                            // elements as there are candidates
+                                            // in the beam.
+    (const float*, // Emissions from the input to the autoregressive model
+                   // (usually an encoder-like model). Invariant throughout
+                   // decoding and set using the
+     const int, // N - the size of the token set emitted by the encoder for each
+                // time step. Invariant throughout decoding.
+     const int, // T - the total number of time steps emitted by the encoder.
+                // Invariant throughout decoding.
+     const std::vector<int>&, // The raw token ID of the last step for each
+                              // element in the beam; the vector has as many
+                              // elements as there are candidates in the beam.
+     const std::vector<EmittingModelStatePtr>&, // State from the previous type
+                                                // steps for each candidate in
+                                                // the beam. Each hypothesis in
+                                                // the beam has its own previous
+                                                // state because it required a
+                                                // distinct autoregressive input
+                                                // to the emitting model; the
+                                                // vector has as many elements
+                                                // as there are candidates in
+                                                // the beam.
+     int& // The current time step being decoded -- 0 --> T
+     )>;
 
 /* ===================== Candidate-related operations ===================== */
 
