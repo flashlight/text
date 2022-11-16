@@ -250,21 +250,6 @@ jobs:
       - run_python_tests:
           use_kenlm: << parameters.use_kenlm >>
 
-  ubuntu_20_gcc_9_external:
-    parameters:
-      use_kenlm:
-        type: string
-        default: "ON"
-      build_shared_libs:
-        type: string
-        default: "OFF"
-    docker:
-      - image: cimg/base:2021.04
-    steps:
-      - checkout
-      - install_ubuntu_build_dependencies:
-          use_kenlm: << parameters.use_kenlm >>
-
   macos_clang_13:
     parameters:
       use_kenlm:
@@ -292,7 +277,7 @@ jobs:
       - build_flashlight_text:
           platform: "macos"
           use_kenlm: << parameters.use_kenlm >>
-          build_shared_libs: << parameters.build_standalone >>
+          build_shared_libs: << parameters.build_shared_libs >>
           build_standalone: << parameters.build_standalone >>
 
   macos_clang_13_python:
