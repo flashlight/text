@@ -20,7 +20,7 @@ commands:
           name: "Install Build Dependencies"
           command: |
             sudo apt -y update && \
-            sudo apt -y install build-essential python3-dev python3-pip cmake
+            sudo apt -y install build-essential python3-dev python3-pip python3-venv cmake
       - when:
           condition:
             equal: ["ON", << parameters.use_kenlm >>]
@@ -118,12 +118,17 @@ commands:
         default: "ON"
     steps:
       - run:
+          name: "Setup virtualenv"
+          command: |
+            python3 -m venv venv
+            echo "source venv/bin/activate" >> $BASH_ENV
+      - run:
           name: "Install Python Bindings"
           command: |
-            pip3 install packaging && \
-            pip3 install numpy && \
+            pip install packaging && \
+            pip install numpy && \
             cd bindings/python && \
-            USE_KENLM=<< parameters.use_kenlm >> pip3 install -e .
+            USE_KENLM=<< parameters.use_kenlm >> python setup.py install
   run_python_tests:
     parameters:
       use_kenlm:
@@ -133,8 +138,8 @@ commands:
       - run:
           name: "Run Python Binding Tests"
           command: |
-            cd bindings/python/test && USE_KENLM=<< parameters.use_kenlm >> \
-            python3 -m unittest discover -v .
+            cd bindings/python/test && \
+            USE_KENLM=<< parameters.use_kenlm >> python -m unittest discover -v .
   test_with_external_project:
     parameters:
       build_shared_libs:

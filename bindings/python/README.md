@@ -22,12 +22,12 @@ We require `python >= 3.6` with the following packages installed:
 Once the dependencies are satisfied, from the project root, use:
 ```
 cd bindings/python
-python3 setup.py install
+python setup.py install
 ```
 
 or locally in editable mode (`-e` is required as libs are built outside of the bindings directory)
 ```
-pip3 install -e .
+pip install -e .
 ```
 
 (`pypi` installation coming soon)
