@@ -123,7 +123,7 @@ commands:
             pip3 install packaging && \
             pip3 install numpy && \
             cd bindings/python && \
-            USE_KENLM=<< parameters.use_kenlm >> pip3 install -e .
+            USE_KENLM=<< parameters.use_kenlm >> python3 setup.py install
   run_python_tests:
     parameters:
       use_kenlm:
