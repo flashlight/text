@@ -41,8 +41,8 @@ add_library(flashlight-text "")
 
 target_include_directories(
   flashlight-text
-  PRIVATE
-  ${PROJECT_SOURCE_DIR}
+  PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
 )
 
 target_compile_definitions(
