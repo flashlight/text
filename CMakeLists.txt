@@ -66,7 +66,7 @@ if (FL_TEXT_BUILD_TESTS)
 endif ()
 
 if (FL_TEXT_CODE_COVERAGE)
-  add_coverage_to_target(TARGET flashlight-text)
+  fl_text_add_coverage_to_target(TARGET flashlight-text)
 endif()
 
 # ------------------------ Installation ------------------------
@@ -84,4 +84,4 @@ install(
 )
 
 # Install libraries and create CMake config/targets files
-setup_install_targets(INSTALL_TARGETS flashlight-text)
+fl_text_setup_install_targets(INSTALL_TARGETS flashlight-text)

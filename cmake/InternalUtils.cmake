@@ -1,4 +1,4 @@
-function(add_coverage_to_target)
+function(fl_text_add_coverage_to_target)
   set(oneValueArgs TARGET)
   cmake_parse_arguments(add_coverage_to_target "${options}" "${oneValueArgs}"
     "${multiValueArgs}" ${ARGN})
@@ -20,9 +20,9 @@ function(add_coverage_to_target)
         --coverage)
     endif()
   endif()
-endfunction()
+endfunction(fl_text_add_coverage_to_target)
 
-function(setup_install_targets)
+function(fl_text_setup_install_targets)
   set(multiValueArgs INSTALL_TARGETS INSTALL_HEADERS)
   cmake_parse_arguments(setup_install_targets "${options}" "${oneValueArgs}"
     "${multiValueArgs}" ${ARGN})
@@ -78,15 +78,4 @@ function(setup_install_targets)
   set_target_properties(${setup_install_targets_INSTALL_TARGETS} PROPERTIES
     VERSION "${flashlight-text_VERSION}"
     SOVERSION "${flashlight-text_VERSION_MAJOR}")
-endfunction(setup_install_targets)
-
-function(setup_install_find_module CONFIG_PATH)
-  # Only actually move module files if doing a standalone install; otherwise,
-  # assume we're being installed by a package manager
-  if (FL_TEXT_BUILD_STANDALONE)
-    install(
-      FILES ${CONFIG_PATH}
-      DESTINATION ${FL_INSTALL_CMAKE_DIR}
-      )
-  endif()
-endfunction()
+endfunction(fl_text_setup_install_targets)
