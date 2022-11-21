@@ -26,7 +26,7 @@ set(FL_INSTALL_CMAKE_DIR "${FL_INSTALL_ASSETS_BASE_DIR}/cmake" CACHE PATH "Insta
 set(FL_INSTALL_EXAMPLES_DIR "${FL_INSTALL_ASSETS_BASE_DIR}/examples" CACHE PATH "Install path for example files")
 set(FL_INSTALL_DOC_DIR "${FL_INSTALL_ASSETS_BASE_DIR}/doc" CACHE PATH "Install path for documentation")
 
-include(InternalUtils)
+include(${PROJECT_SOURCE_DIR}/cmake/InternalUtils.cmake)
 
 # ----------------------------- Configuration -----------------------------
 
