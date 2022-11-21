@@ -16,7 +16,7 @@ if (FL_TEXT_USE_KENLM)
   if (NOT kenlm_FOUND)
     if (FL_TEXT_BUILD_STANDALONE)
       message(STATUS "KenLM not found - will download and build from source")
-      include(${CMAKE_MODULE_PATH}/BuildKenlm.cmake)
+      include(${PROJECT_SOURCE_DIR}/cmake/BuildKenlm.cmake)
     else()
       message(FATAL_ERROR "KenLM not found but FL_TEXT_USE_KENLM enabled. "
         "Install KenLM or set the KENLM_ROOT environment variable.")

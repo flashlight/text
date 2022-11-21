@@ -5,8 +5,8 @@ if (NOT BUILD_SHARED_LIBS)
     "set BUILD_SHARED_LIBS to ON.")
 endif()
 
-include(${CMAKE_MODULE_PATH}/Buildpybind11.cmake)
-include(${CMAKE_MODULE_PATH}/pybind11Tools.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/Buildpybind11.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/pybind11Tools.cmake)
 
 function (add_pybind11_extension ext_name)
   string(REPLACE "_" ";" modlist ${ext_name})

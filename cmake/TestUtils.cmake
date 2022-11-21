@@ -8,7 +8,7 @@ if (NOT GTEST_FOUND)
   if (NOT TARGET gtest)
     message(STATUS "googletest not found - will download and build from source")
     # Download, build, and find the resulting googletest
-    include(${CMAKE_MODULE_PATH}/BuildGoogleTest.cmake)
+    include(${PROJECT_SOURCE_DIR}/cmake/BuildGoogleTest.cmake)
     list(APPEND GTEST_TARGETS GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
   endif()
 else()
