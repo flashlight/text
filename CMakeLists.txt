@@ -61,7 +61,7 @@ endif()
 
 if (FL_TEXT_BUILD_TESTS)
   enable_testing()
-  include(TestUtils)
+  include(${PROJECT_SOURCE_DIR}/cmake/TestUtils.cmake)
   add_subdirectory(${PROJECT_SOURCE_DIR}/flashlight/lib/text/test)
 endif ()
 
