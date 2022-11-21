@@ -25,7 +25,7 @@ if (FL_TEXT_USE_KENLM)
   if (FL_TEXT_BUILD_STANDALONE)
     # Install the module so downstream projects can find the lib
     install(
-      FILES ${CMAKE_MODULE_PATH}/Findkenlm.cmake
+      FILES ${PROJECT_SOURCE_DIR}/cmake/Findkenlm.cmake
       DESTINATION ${FL_INSTALL_CMAKE_DIR}
       )
   endif()
