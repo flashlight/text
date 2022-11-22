@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16)
 
 project(flashlight-text LANGUAGES CXX C VERSION 0.1)
 
@@ -37,13 +37,19 @@ option(FL_TEXT_BUILD_PYTHON "Build Python bindings" OFF)
 
 # ------------------------ Build ------------------------
 
-add_library(flashlight-text "")
+add_library(flashlight-text)
 
 target_include_directories(
   flashlight-text
   PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
 )
+
+set_target_properties(
+  flashlight-text PROPERTIES
+  CXX_STANDARD 17
+  CXX_STANDARD_REQUIRED ON
+  )
 
 target_compile_definitions(
   flashlight-text
