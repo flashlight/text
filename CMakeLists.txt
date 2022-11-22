@@ -57,6 +57,8 @@ if (FL_TEXT_BUILD_PYTHON)
   include(${PROJECT_SOURCE_DIR}/bindings/python/CMakeLists.txt)
 endif()
 
+add_library(flashlight::flashlight-text ALIAS flashlight-text)
+
 # ------------------------ Tests + Code Coverage------------------------
 
 if (FL_TEXT_BUILD_TESTS)
