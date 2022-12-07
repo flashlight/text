@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16)
 
 project(flashlight-text LANGUAGES CXX C VERSION 0.1)
 
@@ -10,7 +10,7 @@ if(CCACHE_PROGRAM)
   set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CCACHE_PROGRAM}")
 endif()
 
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -26,7 +26,7 @@ set(FL_INSTALL_CMAKE_DIR "${FL_INSTALL_ASSETS_BASE_DIR}/cmake" CACHE PATH "Insta
 set(FL_INSTALL_EXAMPLES_DIR "${FL_INSTALL_ASSETS_BASE_DIR}/examples" CACHE PATH "Install path for example files")
 set(FL_INSTALL_DOC_DIR "${FL_INSTALL_ASSETS_BASE_DIR}/doc" CACHE PATH "Install path for documentation")
 
-include(InternalUtils)
+include(${PROJECT_SOURCE_DIR}/cmake/InternalUtils.cmake)
 
 # ----------------------------- Configuration -----------------------------
 
@@ -37,13 +37,19 @@ option(FL_TEXT_BUILD_PYTHON "Build Python bindings" OFF)
 
 # ------------------------ Build ------------------------
 
-add_library(flashlight-text "")
+add_library(flashlight-text)
 
 target_include_directories(
   flashlight-text
-  PRIVATE
-  ${PROJECT_SOURCE_DIR}
+  PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
 )
+
+set_target_properties(
+  flashlight-text PROPERTIES
+  CXX_STANDARD 17
+  CXX_STANDARD_REQUIRED ON
+  )
 
 target_compile_definitions(
   flashlight-text
@@ -57,16 +63,18 @@ if (FL_TEXT_BUILD_PYTHON)
   include(${PROJECT_SOURCE_DIR}/bindings/python/CMakeLists.txt)
 endif()
 
+add_library(flashlight::flashlight-text ALIAS flashlight-text)
+
 # ------------------------ Tests + Code Coverage------------------------
 
 if (FL_TEXT_BUILD_TESTS)
   enable_testing()
-  include(TestUtils)
+  include(${PROJECT_SOURCE_DIR}/cmake/TestUtils.cmake)
   add_subdirectory(${PROJECT_SOURCE_DIR}/flashlight/lib/text/test)
 endif ()
 
 if (FL_TEXT_CODE_COVERAGE)
-  add_coverage_to_target(TARGET flashlight-text)
+  fl_text_add_coverage_to_target(TARGET flashlight-text)
 endif()
 
 # ------------------------ Installation ------------------------
@@ -84,4 +92,4 @@ install(
 )
 
 # Install libraries and create CMake config/targets files
-setup_install_targets(INSTALL_TARGETS flashlight-text)
+fl_text_setup_install_targets(INSTALL_TARGETS flashlight-text)
