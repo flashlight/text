@@ -5,11 +5,16 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+#include <pybind11/functional.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <pybind11/stl_bind.h>
 
 #include "flashlight/lib/text/decoder/LexiconDecoder.h"
 #include "flashlight/lib/text/decoder/LexiconFreeDecoder.h"
+#include "flashlight/lib/text/decoder/LexiconFreeSeq2SeqDecoder.h"
+#include "flashlight/lib/text/decoder/LexiconSeq2SeqDecoder.h"
+#include "flashlight/lib/text/decoder/Utils.h"
 #include "flashlight/lib/text/decoder/lm/ZeroLM.h"
 
 #if FL_TEXT_USE_KENLM
@@ -20,13 +25,8 @@ namespace py = pybind11;
 using namespace fl::lib::text;
 using namespace py::literals;
 
-/**
- * Some hackery that lets pybind11 handle shared_ptr<void> (for old LMStatePtr).
- * See: https://github.com/pybind/pybind11/issues/820
- * PYBIND11_MAKE_OPAQUE(std::shared_ptr<void>);
- * and inside PYBIND11_MODULE
- *   py::class_<std::shared_ptr<void>>(m, "encapsulated_data");
- */
+PYBIND11_MAKE_OPAQUE(EmittingModelStatePtr);
+PYBIND11_MAKE_OPAQUE(std::vector<EmittingModelStatePtr>);
 
 namespace {
 
@@ -127,6 +127,43 @@ std::vector<DecodeResult> LexiconFreeDecoder_decode(
     int T,
     int N) {
   return decoder.decode(reinterpret_cast<const float*>(emissions), T, N);
+}
+
+void LexiconSeq2SeqDecoder_decodeStep(
+    LexiconSeq2SeqDecoder& decoder,
+    uintptr_t emissions,
+    int T,
+    int N) {
+  decoder.decodeStep(reinterpret_cast<const float*>(emissions), T, N);
+}
+
+void LexiconFreeSeq2SeqDecoder_decodeStep(
+    LexiconFreeSeq2SeqDecoder& decoder,
+    uintptr_t emissions,
+    int T,
+    int N) {
+  decoder.decodeStep(reinterpret_cast<const float*>(emissions), T, N);
+}
+
+/*
+ * Create an EmittingModelStatePtr from an arbitrary Python object. Since
+ * py::object refcounts Python and C++ usages (via its copy ctor), we can create
+ * a shared pointer straight away without worrying about lifetime.
+ */
+EmittingModelStatePtr createEmittingModelState(py::object obj) {
+  auto s = std::make_shared<py::object>(std::move(obj));
+  return std::static_pointer_cast<void>(s);
+}
+
+/*
+ * Recover a Python object from an EmittingModelStatePtr. Refcounting of
+ * py::object means we can return a copy.
+ */
+py::object getObjFromEmittingModelState(EmittingModelStatePtr state) {
+  // The only way to create this type from Python is via createModelStatePtr,
+  // which is guaranteed to store a py::object; this is a safe static cast.
+  auto val = std::static_pointer_cast<py::object>(state);
+  return *val;
 }
 
 } // namespace
@@ -411,4 +448,128 @@ PYBIND11_MODULE(flashlight_lib_text_decoder, m) {
                 t[3].cast<std::vector<float>>() // transitions
             );
           }));
+
+  // Seq2seq Decoding
+  py::class_<LexiconSeq2SeqDecoderOptions>(m, "LexiconSeq2SeqDecoderOptions")
+      .def(
+          py::init<
+              const int,
+              const int,
+              const double,
+              const double,
+              const double,
+              const double,
+              const bool>(),
+          "beam_size"_a,
+          "beam_size_token"_a,
+          "beam_threshold"_a,
+          "lm_weight"_a,
+          "word_score"_a,
+          "eos_score"_a,
+          "log_add"_a)
+      .def_readwrite("beam_size", &LexiconSeq2SeqDecoderOptions::beamSize)
+      .def_readwrite(
+          "beam_size_token", &LexiconSeq2SeqDecoderOptions::beamSizeToken)
+      .def_readwrite(
+          "beam_threshold", &LexiconSeq2SeqDecoderOptions::beamThreshold)
+      .def_readwrite("lm_weight", &LexiconSeq2SeqDecoderOptions::lmWeight)
+      .def_readwrite("word_score", &LexiconSeq2SeqDecoderOptions::wordScore)
+      .def_readwrite("eos_score", &LexiconSeq2SeqDecoderOptions::eosScore)
+      .def_readwrite("log_add", &LexiconSeq2SeqDecoderOptions::logAdd);
+
+  py::class_<LexiconFreeSeq2SeqDecoderOptions>(
+      m, "LexiconFreeSeq2SeqDecoderOptions")
+      .def(
+          py::init<
+              const int,
+              const int,
+              const double,
+              const double,
+              const double,
+              const bool>(),
+          "beam_size"_a,
+          "beam_size_token"_a,
+          "beam_threshold"_a,
+          "lm_weight"_a,
+          "eos_score"_a,
+          "log_add"_a)
+      .def_readwrite("beam_size", &LexiconFreeSeq2SeqDecoderOptions::beamSize)
+      .def_readwrite(
+          "beam_size_token", &LexiconFreeSeq2SeqDecoderOptions::beamSizeToken)
+      .def_readwrite(
+          "beam_threshold", &LexiconFreeSeq2SeqDecoderOptions::beamThreshold)
+      .def_readwrite("lm_weight", &LexiconFreeSeq2SeqDecoderOptions::lmWeight)
+      .def_readwrite("eos_score", &LexiconFreeSeq2SeqDecoderOptions::eosScore)
+      .def_readwrite("log_add", &LexiconFreeSeq2SeqDecoderOptions::logAdd);
+
+  py::class_<LexiconSeq2SeqDecoder>(m, "LexiconSeq2SeqDecoder")
+      .def(
+          py::init<
+              LexiconSeq2SeqDecoderOptions,
+              const TriePtr,
+              const LMPtr,
+              const int,
+              EmittingModelUpdateFunc,
+              const int,
+              const bool>(),
+          "options"_a,
+          "lm"_a,
+          "trie"_a,
+          "eos_idx"_a,
+          "update_func"_a,
+          "max_output_length"_a,
+          "is_token_lm"_a)
+      .def(
+          "decode_step",
+          &LexiconSeq2SeqDecoder_decodeStep,
+          "emissions"_a,
+          "T"_a,
+          "N"_a)
+      .def("prune", &LexiconSeq2SeqDecoder::prune, "look_back"_a = 0)
+      .def(
+          "get_best_hypothesis",
+          &LexiconSeq2SeqDecoder::getBestHypothesis,
+          "look_back"_a = 0)
+      .def(
+          "get_all_final_hypothesis",
+          &LexiconSeq2SeqDecoder::getAllFinalHypothesis);
+
+  // Constructor intentionally omitted -- not to be constructed directly.
+  // create_model_state and get_model_state_obj should be used to create
+  // instances of this type.
+  py::class_<EmittingModelStatePtr>(m, "EmittingModelState");
+  m.def("create_emitting_model_state", &createEmittingModelState);
+  m.def("get_obj_from_emitting_model_state", &getObjFromEmittingModelState);
+
+  py::bind_vector<std::vector<EmittingModelStatePtr>>(
+      m, "VectorEmittingModelState");
+  py::implicitly_convertible<py::list, std::vector<EmittingModelStatePtr>>();
+
+  py::class_<LexiconFreeSeq2SeqDecoder>(m, "LexiconFreeSeq2SeqDecoder")
+      .def(
+          py::init<
+              LexiconFreeSeq2SeqDecoderOptions,
+              const LMPtr,
+              const int,
+              EmittingModelUpdateFunc,
+              const int>(),
+          "options"_a,
+          "lm"_a,
+          "eos_idx"_a,
+          "update_func"_a,
+          "max_output_length"_a)
+      .def(
+          "decode_step",
+          &LexiconFreeSeq2SeqDecoder_decodeStep,
+          "emissions"_a,
+          "T"_a,
+          "N"_a)
+      .def("prune", &LexiconFreeSeq2SeqDecoder::prune, "look_back"_a = 0)
+      .def(
+          "get_best_hypothesis",
+          &LexiconFreeSeq2SeqDecoder::getBestHypothesis,
+          "look_back"_a = 0)
+      .def(
+          "get_all_final_hypothesis",
+          &LexiconFreeSeq2SeqDecoder::getAllFinalHypothesis);
 }

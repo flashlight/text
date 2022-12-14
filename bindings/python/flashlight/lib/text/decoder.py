@@ -9,12 +9,19 @@ LICENSE file in the root directory of this source tree.
 import logging
 
 from .flashlight_lib_text_decoder import (
+    create_emitting_model_state,
     CriterionType,
     DecodeResult,
+    EmittingModelState,
+    get_obj_from_emitting_model_state,
     LexiconDecoder,
     LexiconDecoderOptions,
     LexiconFreeDecoder,
     LexiconFreeDecoderOptions,
+    LexiconFreeSeq2SeqDecoder,
+    LexiconFreeSeq2SeqDecoderOptions,
+    LexiconSeq2SeqDecoder,
+    LexiconSeq2SeqDecoderOptions,
     LM,
     LMState,
     SmearingMode,
