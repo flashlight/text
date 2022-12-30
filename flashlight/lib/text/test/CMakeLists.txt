@@ -8,6 +8,7 @@ build_test(SRC ${DIR}/dictionary/DictionaryTest.cpp LIBS ${LIBS}
 build_test(SRC ${DIR}/tokenizer/TokenizerTest.cpp LIBS ${LIBS}
   PREPROC "TOKENIZER_TEST_DATADIR=\"${DIR}/tokenizer\"")
 build_test(SRC ${DIR}/StringTest.cpp LIBS ${LIBS})
+build_test(SRC ${DIR}/decoder/Seq2SeqDecoderTest.cpp LIBS ${LIBS})
 
 if (FL_TEXT_USE_KENLM)
   build_test(SRC ${DIR}/decoder/DecoderTest.cpp LIBS ${LIBS}
