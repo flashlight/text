@@ -13,7 +13,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-from packaging import version
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
 
@@ -46,8 +45,11 @@ class CMakeBuild(build_ext):
             )
 
         cmake_version = re.search(r"version\s*([\d.]+)", out.decode().lower()).group(1)
-        if version.parse(cmake_version) < version.parse("3.10"):
-            raise RuntimeError("CMake >= 3.10 is required to build flashlight-text")
+        cmake_version_tuple = tuple([int(v) for v in cmake_version.split(".")])
+        if cmake_version_tuple < (3, 16):
+            raise RuntimeError(
+                f"CMake >= 3.16 is required to build flashlight-text; found {cmake_version}"
+            )
 
         # our CMakeLists builds all the extensions at once
         for ext in self.extensions:
