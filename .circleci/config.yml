@@ -125,7 +125,6 @@ commands:
       - run:
           name: "Install Python Bindings"
           command: |
-            pip install packaging && \
             pip install numpy && \
             cd bindings/python && \
             USE_KENLM=<< parameters.use_kenlm >> python setup.py install

@@ -19,7 +19,6 @@ jobs:
         run: python -m cibuildwheel --archs auto64 --output-dir wheelhouse bindings/python
         env:
           CIBW_ENVIRONMENT: USE_KENLM=0
-          CIBW_BEFORE_BUILD: pip install packaging
           CIBW_PRERELEASE_PYTHONS: 0
           CIBW_BUILD_VERBOSITY: 1
       - uses: actions/upload-artifact@v3

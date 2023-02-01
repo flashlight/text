@@ -13,8 +13,7 @@ Define your own language model for beam search decoding
 ## Installation
 ### Dependencies
 We require `python >= 3.6` with the following packages installed:
-- [packaging](https://pypi.org/project/packaging/)
-- [cmake](https://cmake.org/) >= 3.10, and `make`
+- [cmake](https://cmake.org/) >= 3.16, and `make`
 - [KenLM](https://github.com/kpu/kenlm)
 
 ### Build Instructions
