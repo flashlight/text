@@ -332,7 +332,7 @@ class DecoderLexiconFreeSeq2SeqTestCase(unittest.TestCase):
         # timestep --> autoregressive scores
         self.model_score_mapping = {
             0: [0.1, 0.1, 0.5, 0.1],
-            1: [0.5, 0.2, 0.2, 0.1],
+            1: [0.5, 0.2, 0.1, 0.0],
             2: [0.1, 0.5, 0.1, 0.1],
         }
         self.assertEqual(len(self.model_score_mapping), T)
