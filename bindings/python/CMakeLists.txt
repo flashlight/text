@@ -5,6 +5,18 @@ if (NOT BUILD_SHARED_LIBS)
     "set BUILD_SHARED_LIBS to ON.")
 endif()
 
+# Since the Python libs and standalone Flashlight Text libs are built/installed
+# to the same directory, set rpaths on the Python targets to be the current dir
+if(APPLE)
+  # macOS
+  set(CMAKE_MACOSX_RPATH ON)
+  set(_portable_rpath_origin "@loader_path")
+else()
+  # Linux
+  set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
+  set(_portable_rpath_origin $ORIGIN)
+endif(APPLE)
+
 include(${PROJECT_SOURCE_DIR}/cmake/Buildpybind11.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/pybind11Tools.cmake)
 
@@ -36,10 +48,17 @@ function (add_pybind11_extension ext_name)
     )
 
   add_dependencies(${ext_name} pybind11)
-  if (CMAKE_LIBRARY_OUTPUT_DIRECTORY)
-    set_target_properties(${ext_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${relpath})
+
+  # Package build versus build bindings directly with CMake
+  if (FL_TEXT_BUILD_PYTHON_PACKAGE)
+    set_target_properties(${ext_name} PROPERTIES
+      OUTPUT_NAME ${ext_name}
+      BUILD_RPATH ${_portable_rpath_origin})
+  else()
+    if (CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+      set_target_properties(${ext_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${relpath})
+    endif()
   endif()
-  set_target_properties(${ext_name} PROPERTIES OUTPUT_NAME ${ext_name})
 endfunction ()
 
 add_pybind11_extension(flashlight_lib_text_decoder)

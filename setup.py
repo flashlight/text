@@ -6,6 +6,7 @@ This source code is licensed under the MIT-style license found in the
 LICENSE file in the root directory of this source tree.
 """
 
+import datetime
 import os
 import platform
 import re
@@ -13,20 +14,44 @@ import subprocess
 import sys
 from pathlib import Path
 
-from setuptools import Extension, setup
+from setuptools import Extension, find_namespace_packages, setup
 from setuptools.command.build_ext import build_ext
+
+# Path relative to project root that contains Python artifacts for packaging
+PACKAGE_DIR = "bindings/python"
+ARTIFACTS_DIR = os.path.join(PACKAGE_DIR, "flashlight/lib/text")
+
+this_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Environment variables:
 # - `USE_KENLM=0` disables building KenLM
 # By default build with USE_KENLM=1
 
 
-def check_env_flag(name, default=""):
+def check_env_flag(name, default="") -> bool:
     return os.getenv(name, default).upper() in ["ON", "1", "YES", "TRUE", "Y"]
 
 
-def check_negative_env_flag(name, default=""):
+def check_negative_env_flag(name, default="") -> bool:
     return os.getenv(name, default).upper() in ["OFF", "0", "NO", "FALSE", "N"]
+
+
+def get_local_version_suffix() -> str:
+    date_suffix = datetime.datetime.now().strftime("%Y%m%d")
+    git_hash = subprocess.check_output(
+        ["git", "rev-parse", "--short", "HEAD"], cwd=Path(__file__).parent
+    ).decode("ascii")[:-1]
+    return f"+{git_hash}.d{date_suffix}"
+
+
+def write_version_file(version: str):
+    version_path = os.path.join(this_dir, ARTIFACTS_DIR, "version.py")
+    with open(version_path, "w") as f:
+        f.write("# noqa: C801\n")
+        f.write(f'__version__ = "{version}"\n')
+        tag = os.getenv("GIT_TAG")
+        if tag is not None:
+            f.write(f'git_tag = "{tag}"\n')
 
 
 class CMakeExtension(Extension):
@@ -56,11 +81,8 @@ class CMakeBuild(build_ext):
             self.build_extensions(ext)
 
     def build_extensions(self, ext):
-        ext_dir = Path(self.get_ext_fullpath(ext.name)).absolute()
-        while ext_dir.name != "flashlight":
-            ext_dir = ext_dir.parent
-        ext_dir = str(ext_dir.parent)
-        source_dir = str(Path(__file__).absolute().parent.parent.parent)
+        ext_dir = str(Path(self.get_ext_fullpath(ext.name)).absolute().parent)
+        source_dir = str(Path(__file__).absolute().parent)
         use_kenlm = "OFF" if check_negative_env_flag("USE_KENLM") else "ON"
         cmake_args = [
             "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=" + ext_dir,
@@ -69,6 +91,7 @@ class CMakeBuild(build_ext):
             "-DFL_TEXT_BUILD_STANDALONE=OFF",
             "-DFL_TEXT_BUILD_TESTS=OFF",
             "-DFL_TEXT_BUILD_PYTHON=ON",
+            "-DFL_TEXT_BUILD_PYTHON_PACKAGE=ON",
             "-DFL_TEXT_USE_KENLM=" + use_kenlm,
         ]
         cfg = "Debug" if self.debug else "Release"
@@ -77,6 +100,7 @@ class CMakeBuild(build_ext):
         if platform.system() == "Windows":
             cmake_args += [
                 "-DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON",
+                "-DCMAKE_RUNTIME_OUTPUT_DIRECTORY_{}={}".format(cfg.upper(), ext_dir),
                 "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}".format(cfg.upper(), ext_dir),
                 "-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_{}={}".format(cfg.upper(), ext_dir),
             ]
@@ -102,20 +126,41 @@ class CMakeBuild(build_ext):
         )
 
 
-setup(
-    name="flashlight-text",
-    version="0.1",
-    author="Flashlight Contributors",
-    author_email="oncall+fair_speech@xmail.facebook.com",
-    description="Flashlight Text bindings for python",
-    long_description="",
-    packages=["flashlight.lib.text"],
-    ext_modules=[
-        CMakeExtension("flashlight.lib.text.decoder"),
-        CMakeExtension("flashlight.lib.text.dictionary"),
-    ],
-    cmdclass={"build_ext": CMakeBuild},
-    zip_safe=False,
-    license="BSD licensed, as found in the LICENSE file",
-    python_requires=">=3.6",
-)
+if __name__ == "__main__":
+    if os.getenv("BUILD_VERSION"):
+        version = os.getenv("BUILD_VERSION")
+    else:
+        version_txt = os.path.join(this_dir, PACKAGE_DIR, "version.txt")
+        with open(version_txt) as f:
+            version = f.readline().strip()
+        version += get_local_version_suffix()
+
+    write_version_file(version)
+
+    setup(
+        name="flashlight-text",
+        version=version,
+        url="https://github.com/flashlight/text",
+        author="Jacob Kahn",
+        author_email="jacobkahn1@gmail.com",
+        description="Flashlight Text bindings for Python",
+        packages=find_namespace_packages(
+            where=PACKAGE_DIR, include=["flashlight.lib.text"], exclude=["test"]
+        ),
+        package_dir={"": PACKAGE_DIR},
+        ext_modules=[
+            CMakeExtension("flashlight.lib.text.decoder"),
+            CMakeExtension("flashlight.lib.text.dictionary"),
+        ],
+        cmdclass={"build_ext": CMakeBuild},
+        zip_safe=False,
+        license="BSD licensed, as found in the LICENSE file",
+        python_requires=">=3.6",
+        classifiers=[
+            "Programming Language :: Python :: 3.7",
+            "Programming Language :: Python :: 3.8",
+            "Programming Language :: Python :: 3.9",
+            "Topic :: Scientific/Engineering :: Artificial Intelligence",
+            "Operating System :: OS Independent",
+        ],
+    )
