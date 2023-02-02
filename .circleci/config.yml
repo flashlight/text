@@ -111,6 +111,31 @@ commands:
             - run:
                 name: "Configure shared lib paths"
                 command: sudo ldconfig
+  setup_python_virtualenv:
+    parameters:
+      platform:
+        type: string
+    steps:
+      - when:
+          condition:
+            or:
+              - equal: ["linux", << parameters.platform >>]
+              - equal: ["macos", << parameters.platform >>]
+          steps:
+            - run:
+                name: "Setup virtualenv"
+                command: |
+                  python3 -m venv venv
+                  echo "source venv/bin/activate" >> $BASH_ENV
+      - when:
+          condition:
+            equal: ["windows", << parameters.platform >>]
+          steps:
+            - run:
+                name: "Setup virtualenv"
+                command: |
+                  python -m venv venv
+                  echo "source venv/Scripts/activate" >> $BASH_ENV
   install_python_bindings:
     parameters:
       use_kenlm:
@@ -118,16 +143,10 @@ commands:
         default: "ON"
     steps:
       - run:
-          name: "Setup virtualenv"
-          command: |
-            python3 -m venv venv
-            echo "source venv/bin/activate" >> $BASH_ENV
-      - run:
           name: "Install Python Bindings"
           command: |
-            pip install numpy && \
-            cd bindings/python && \
-            USE_KENLM=<< parameters.use_kenlm >> python setup.py install
+            pip install wheel numpy && \
+            USE_KENLM=<< parameters.use_kenlm >> pip install . -v
   run_python_tests:
     parameters:
       use_kenlm:
@@ -249,6 +268,8 @@ jobs:
             equal: ["ON", << parameters.use_kenlm >>]
           steps:
             - install_kenlm
+      - setup_python_virtualenv:
+          platform: "linux"
       - install_python_bindings:
           use_kenlm: << parameters.use_kenlm >>
       - run_python_tests:
@@ -300,6 +321,8 @@ jobs:
           steps:
             - install_kenlm:
                 platform: "macos"
+      - setup_python_virtualenv:
+          platform: "macos"
       - install_python_bindings:
           use_kenlm: << parameters.use_kenlm >>
       - run_python_tests:
@@ -334,8 +357,12 @@ jobs:
     steps:
       - checkout
       - install_msvc_build_dependencies
+      - setup_python_virtualenv:
+          platform: "windows"
       - install_python_bindings:
           use_kenlm: "OFF"
+      - run_python_tests:
+          use_kenlm: << parameters.use_kenlm >>
 
 workflows:
   build-test:

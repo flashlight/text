@@ -20,6 +20,7 @@ eggs/
 .installed.cfg
 *.egg
 wheels/
+**/version.py
 
 # Coverage
 *.info

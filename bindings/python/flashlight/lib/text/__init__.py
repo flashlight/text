@@ -7,3 +7,8 @@ LICENSE file in the root directory of this source tree.
 """
 
 name = "text"
+
+try:
+    from .version import __version__  # noqa: F401
+except ImportError:
+    __version__ = "0.0.0"
