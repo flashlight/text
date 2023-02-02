@@ -53,7 +53,7 @@ TEST(Seq2SeqDecoderTest, LexiconFreeBasic) {
   // previous timestep) for the purposes of testing
   std::unordered_map<int, std::vector<float>> modelScoreMapping = {
       {0, {0.1, 0.1, 0.5, 0.1}},
-      {1, {0.5, 0.2, 0.2, 0.1}},
+      {1, {0.5, 0.2, 0.1, 0.0}},
       {2, {0.1, 0.5, 0.1, 0.1}},
   };
   ASSERT_EQ(modelScoreMapping.size(), T);
