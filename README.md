@@ -18,10 +18,9 @@
 Flashlight Text has Python bindings for decoder and Dictionary components. To install the bindings from source, [install KenLM](https://github.com/kpu/kenlm/), then clone the repo and build:
 ```shell
 git clone https://github.com/flashlight/text && cd text
-cd bindings/python
-python setup.py install
+pip install .
 ```
-To install without KenLM, set the environment variable `USE_KENLM=0` when running `setup.py`.
+To install without KenLM, set the environment variable `USE_KENLM=0` when running `pip install [...]`.
 
 See the [full Python binding documentation](bindings/python) for examples and more.
 

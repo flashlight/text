@@ -20,11 +20,12 @@ We require `python >= 3.6` with the following packages installed:
 
 Once the dependencies are satisfied, from the project root, use:
 ```
-cd bindings/python
-python setup.py install
+pip install .
 ```
 
-or locally in editable mode (`-e` is required as libs are built outside of the bindings directory)
+Using the environment variable `USE_KENLM=0` removes the KenLM dependency but precludes using the decoder with a language model unless you write C++/`pybind11` bindings for your own language model.
+
+Install in editable mode for development:
 ```
 pip install -e .
 ```
@@ -32,9 +33,6 @@ pip install -e .
 (`pypi` installation coming soon)
 
 **Note:** if you encounter errors, you'll probably have to `rm -rf build dist` before retrying the install.
-
-### Advanced Options
-- `USE_KENLM=0` removes the KenLM dependency but precludes using the decoder unless you write C++/`pybind11` bindings for your own language model.
 
 ## Python API Documentation
 
