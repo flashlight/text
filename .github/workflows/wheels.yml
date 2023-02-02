@@ -42,7 +42,7 @@ jobs:
     needs: [build_wheels, build_sdist]
     runs-on: ubuntu-latest
     # upload to PyPI on every commit. In the future, look for tags starting with v
-    if: github.event_name == 'push' # && startsWith(github.ref, 'refs/tags/v')
+    # if: github.event_name == 'push' # && startsWith(github.ref, 'refs/tags/v')
     # in the future: publish on github releases:
     # if: github.event_name == 'release' && github.event.action == 'published'
     steps:
