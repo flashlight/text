@@ -43,10 +43,7 @@ def get_dev_version() -> str:
     num_commits = subprocess.check_output(
         ["git", "rev-list", "--count", "HEAD"], text=True
     ).strip()
-    commit_hash = subprocess.check_output(
-        ["git", "rev-parse", "--short", "HEAD"], text=True
-    ).strip()
-    return f"{version_from_file}.dev{num_commits}+git.{commit_hash}"
+    return f"{version_from_file}.dev{num_commits}"
 
 
 if __name__ == "__main__":
