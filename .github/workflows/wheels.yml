@@ -18,6 +18,8 @@ jobs:
       - name: Compute version
         run: |
           git config --global --add safe.directory "*"
+          git log > /tmp/foo.out
+          cat /tmp/foo.out
           echo "BUILD_VERSION=$(python bindings/python/compute_version.py)" >> $GITHUB_ENV
       - name: Build wheels
         run: python -m cibuildwheel --archs auto64 --output-dir wheelhouse
