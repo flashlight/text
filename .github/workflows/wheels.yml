@@ -17,7 +17,7 @@ jobs:
         run: python -m pip install cibuildwheel==2.10.1
       - name: Compute version
         run: |
-          pip install packaging
+          git config --global --add safe.directory "*"
           echo "BUILD_VERSION=$(python bindings/python/compute_version.py)" >> $GITHUB_ENV
       - name: Build wheels
         run: python -m cibuildwheel --archs auto64 --output-dir wheelhouse
@@ -37,7 +37,7 @@ jobs:
 
       - name: Compute version
         run: |
-          pip install packaging
+          git config --global --add safe.directory "*"
           echo "BUILD_VERSION=$(python bindings/python/compute_version.py)" >> $GITHUB_ENV
 
       - name: Build sdist
