@@ -144,6 +144,9 @@ if __name__ == "__main__":
         author="Jacob Kahn",
         author_email="jacobkahn1@gmail.com",
         description="Flashlight Text bindings for Python",
+        long_description="Text utilities, including high performance beam "
+        + "search decoding, tokenization, and more",
+        long_description_content_type="text/markdown",
         packages=find_namespace_packages(
             where=PACKAGE_DIR, include=["flashlight.lib.text"], exclude=["test"]
         ),
