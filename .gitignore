@@ -21,6 +21,7 @@ eggs/
 *.egg
 wheels/
 **/version.py
+**/BUILD_VERSION.txt
 
 # Coverage
 *.info
