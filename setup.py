@@ -17,11 +17,13 @@ from pathlib import Path
 from setuptools import Extension, find_namespace_packages, setup
 from setuptools.command.build_ext import build_ext
 
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # Path relative to project root that contains Python artifacts for packaging
 PACKAGE_DIR = "bindings/python"
 ARTIFACTS_DIR = os.path.join(PACKAGE_DIR, "flashlight/lib/text")
+BUILD_VERSION_PATH = Path(os.path.join(THIS_DIR, "BUILD_VERSION.txt"))
 
-this_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Environment variables:
 # - `USE_KENLM=0` disables building KenLM
@@ -45,7 +47,7 @@ def get_local_version_suffix() -> str:
 
 
 def write_version_file(version: str):
-    version_path = os.path.join(this_dir, ARTIFACTS_DIR, "version.py")
+    version_path = os.path.join(THIS_DIR, ARTIFACTS_DIR, "version.py")
     with open(version_path, "w") as f:
         f.write("# noqa: C801\n")
         f.write(f'__version__ = "{version}"\n')
@@ -129,8 +131,10 @@ class CMakeBuild(build_ext):
 if __name__ == "__main__":
     if os.getenv("BUILD_VERSION"):
         version = os.getenv("BUILD_VERSION")
+    elif BUILD_VERSION_PATH.is_file():
+        version = BUILD_VERSION_PATH.read_text().strip()
     else:
-        version_txt = os.path.join(this_dir, PACKAGE_DIR, "version.txt")
+        version_txt = os.path.join(THIS_DIR, PACKAGE_DIR, "version.txt")
         with open(version_txt) as f:
             version = f.readline().strip()
         version += get_local_version_suffix()
@@ -144,8 +148,8 @@ if __name__ == "__main__":
         author="Jacob Kahn",
         author_email="jacobkahn1@gmail.com",
         description="Flashlight Text bindings for Python",
-        long_description="Text utilities, including high performance beam "
-        + "search decoding, tokenization, and more",
+        long_description="Text utilities, including high-performance beam "
+        + "search decoding, tokenization, and more.",
         long_description_content_type="text/markdown",
         packages=find_namespace_packages(
             where=PACKAGE_DIR, include=["flashlight.lib.text"], exclude=["test"]
