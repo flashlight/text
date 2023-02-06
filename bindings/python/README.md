@@ -1,5 +1,13 @@
 # Flashlight Text Python Bindings
-**Contents**
+### Quickstart
+
+Flashlight Text is available on PyPI **without KenLM support** using:
+```bash
+pip install flashlight-text  # without KenLM support
+```
+For now, building from source is required for KenLM support. We'll be adding KenLM support to the PyPI package soon.
+
+#### Contents
 - [Installation](#installation)
   * [Dependencies](#dependencies)
   * [Build Instructions](#build-instructions)
@@ -9,7 +17,6 @@
   * [Beam search decoding with your own language model](#decoding-with-your-own-language-model)
 - [Examples](#examples)
 
-Define your own language model for beam search decoding
 ## Installation
 ### Dependencies
 We require `python >= 3.6` with the following packages installed:

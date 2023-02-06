@@ -128,7 +128,7 @@ class CMakeBuild(build_ext):
         )
 
 
-if __name__ == "__main__":
+def main():
     if os.getenv("BUILD_VERSION"):
         version = os.getenv("BUILD_VERSION")
     elif BUILD_VERSION_PATH.is_file():
@@ -141,6 +141,9 @@ if __name__ == "__main__":
 
     write_version_file(version)
 
+    # Read Python bindings README
+    long_description = (Path(PACKAGE_DIR) / "README.md").read_text()
+
     setup(
         name="flashlight-text",
         version=version,
@@ -148,8 +151,7 @@ if __name__ == "__main__":
         author="Jacob Kahn",
         author_email="jacobkahn1@gmail.com",
         description="Flashlight Text bindings for Python",
-        long_description="Text utilities, including high-performance beam "
-        + "search decoding, tokenization, and more.",
+        long_description=long_description,
         long_description_content_type="text/markdown",
         packages=find_namespace_packages(
             where=PACKAGE_DIR, include=["flashlight.lib.text"], exclude=["test"]
@@ -171,3 +173,7 @@ if __name__ == "__main__":
             "Operating System :: OS Independent",
         ],
     )
+
+
+if __name__ == "__main__":
+    main()
