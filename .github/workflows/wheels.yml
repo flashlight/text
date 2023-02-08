@@ -27,7 +27,7 @@ jobs:
         if: runner.os != 'Windows'
       - name: "Activate virtual environment"
         run: |
-          source flashlight-text-env\Scripts\activate
+          source flashlight-text-env/Scripts/activate
           echo "PATH=$PATH" >> $GITHUB_ENV
         if: runner.os == 'Windows'
         shell: bash
