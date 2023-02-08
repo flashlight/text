@@ -22,6 +22,7 @@ jobs:
       - name: "Create Python virtual environment"
         run: |
           python3 -m venv flashlight-text-env
+          source flashlight-text-env/bin/activate
           echo "PATH=$PATH" >> $GITHUB_ENV
         if: matrix.os == 'self-hosted'
       
