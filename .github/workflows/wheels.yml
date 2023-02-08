@@ -19,12 +19,12 @@ jobs:
       - uses: actions/setup-python@v4
       
       - name: "Create Python Virtual Environment"
-        steps: python3 -m venv flashlight-text-env
+        run: python3 -m venv flashlight-text-env
       - name: "Set up Virtual Environment"
-        steps: echo "source flashlight-text-env/bin/activate" >> $GITHUB_ENV
+        run: echo "source flashlight-text-env/bin/activate" >> $GITHUB_ENV
         if: runner.os == 'Windows'
       - name: "Set up Virtual Environment"
-        steps: echo "flashlight-text-env\Scripts\activate" >> $GITHUB_ENV
+        run: echo "flashlight-text-env\Scripts\activate" >> $GITHUB_ENV
         if: runner.os != 'Windows'
 
       - name: Install cibuildwheel
