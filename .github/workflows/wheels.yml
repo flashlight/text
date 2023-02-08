@@ -4,14 +4,14 @@ on: [push, pull_request]
 
 jobs:
   build_wheels:
-    name: Build wheels on ${{ runner.os }}-${{ runner.arch }} (${{ matrix.os }})
+    name: Build wheels on ${{ matrix.os }} ${{ matrix.label }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-20.04, windows-2022, macOS-12]
         include:
-          - os: self-hosted # macOS arm64 runner
-
+          - os: self-hosted
+            label: "macOS-ARM64"
     steps:
       - uses: actions/checkout@v3
         with:
