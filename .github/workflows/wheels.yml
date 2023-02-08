@@ -9,8 +9,10 @@ jobs:
     strategy:
       matrix:
         # Mac-mini is a macOS arm64 runner
-        os: [ubuntu-20.04, windows-2022, macOS-12, Mac-mini]
-
+        os: [ubuntu-20.04, windows-2022, macOS-12]
+        include:
+          - os: self-hosted
+            
     steps:
       - uses: actions/checkout@v3
         with:
