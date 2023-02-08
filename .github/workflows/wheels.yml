@@ -27,24 +27,20 @@ jobs:
         if: runner.os != 'Windows'
       - name: "Activate virtual environment"
         run: |
-          source flashlight-text-env/Scripts/activate
-          echo "PATH=$PATH" >> $GITHUB_ENV
+          flashlight-text-env/Scripts/activate
+          echo "PATH=$PATH" >> $env:GITHUB_ENV
         if: runner.os == 'Windows'
-        shell: bash
 
       - name: Install cibuildwheel
         run: python -m pip install cibuildwheel==2.12.0
-        shell: bash
       - name: Compute version
         run: echo "$(python bindings/python/compute_version.py)" > BUILD_VERSION.txt
-        shell: bash
       - name: Build wheels
         run: python -m cibuildwheel --archs auto64 --output-dir wheelhouse
         env:
           CIBW_ENVIRONMENT: USE_KENLM=0
           CIBW_PRERELEASE_PYTHONS: 0
           CIBW_BUILD_VERBOSITY: 1
-        shell: bash
       - uses: actions/upload-artifact@v3
         with:
           path: ./wheelhouse/*.whl
