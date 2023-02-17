@@ -6,7 +6,7 @@
 | [**Citing**](#citing)
 
 [![CircleCI](https://circleci.com/gh/flashlight/text.svg?style=shield)](https://app.circleci.com/pipelines/github/flashlight/text)
-[![Join the chat at https://gitter.im/flashlight-ml/community](https://img.shields.io/gitter/room/flashlight-ml/community)](https://gitter.im/flashlight-ml/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) ![PyPI](https://img.shields.io/pypi/v/flashlight-text?color=dark%20green) [![codecov](https://codecov.io/gh/flashlight/text/branch/main/graph/badge.svg?token=rBp4AilMc0)](https://codecov.io/gh/flashlight/text)
+[![Join the chat at https://gitter.im/flashlight-ml/community](https://img.shields.io/gitter/room/flashlight-ml/community)](https://gitter.im/flashlight-ml/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) ![PyPI](https://img.shields.io/pypi/v/flashlight-text?color=dark%20green) ![PyPI - Format](https://img.shields.io/pypi/format/flashlight-text) [![codecov](https://codecov.io/gh/flashlight/text/branch/main/graph/badge.svg?token=rBp4AilMc0)](https://codecov.io/gh/flashlight/text)
 
 *Flashlight Text* is a fast, minimal library for text-based operations. It features:
 - a high-performance, unopinionated [beam search decoder](flashlight/lib/text/decoder)
@@ -15,28 +15,24 @@
 
 ## Quickstart
 
-The Flashlight Text Python package containing decoder and Dictionary components is available on PyPI **without KenLM support** via:
+The Flashlight Text Python package containing beam search decoder and Dictionary components is available on PyPI:
 ```bash
-pip install flashlight-text  # without KenLM support
+pip install flashlight-text
 ```
-For now, building from source is required for KenLM support. We'll be adding KenLM support to the PyPI package soon.
-
-To install the bindings from source, [install KenLM](https://github.com/kpu/kenlm/), then clone the repo and build:
-```shell
-git clone https://github.com/flashlight/text && cd text
-pip install .
+To enable optional KenLM support in Python with the decoder, KenLM must be installed via pip:
+```bash
+pip install git+https://github.com.kpu/kenlm.git
 ```
-To install without KenLM when building from source, set the environment variable `USE_KENLM=0` when running `pip install .`.
 
 See the [full Python binding documentation](bindings/python) for examples and more.
 
 ## Building and Installing
-[**From Source (C++)**](#building-from-source) | [**From Source (Python)**](bindings/python#build-instructions) | [**Adding to Your Own Project (C++)**](#adding-flashlight-text-to-a-c++-project)
+[**From Source (C++)**](#building-from-source) | [**From Source (Python)**](bindings/python#build-instructions) | [**Adding to Your Own Project (C++)**](#adding-flashlight-text-to-a-c-project)
 
 ### Requirements
 At minimum, compilation requires:
 - A C++ compiler with good C++17 support (e.g. gcc/g++ >= 7)
-- [CMake](https://cmake.org/) — version 3.10 or later, and ``make``
+- [CMake](https://cmake.org/) — version 3.16 or later, and ``make``
 - A Linux-based operating system.
 
 **KenLM Support:** If building with KenLM support, [KenLM](https://github.com/kpu/kenlm/) is required. To toggle KenLM support use the `FL_TEXT_USE_KENLM` CMake option or the `USE_KENLM` environment variable when building the Python bindings.
