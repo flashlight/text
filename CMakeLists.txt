@@ -58,6 +58,16 @@ target_compile_definitions(
   FL_TEXT_USE_KENLM=$<BOOL:${FL_TEXT_USE_KENLM}>
 )
 
+
+if (FL_TEXT_USE_KENLM)
+  # KenLM support in Flashlight Text is built as a separate standalone library.
+  # This is to enable dynamically enabling KenLM support at runtime if
+  # libkenlm is present and due to challenges packaging KenLM.
+  add_library(flashlight-text-kenlm)
+  add_library(flashlight::flashlight-text-kenlm ALIAS flashlight-text-kenlm)
+endif()
+
+# Project source
 include(${PROJECT_SOURCE_DIR}/flashlight/lib/text/CMakeLists.txt)
 
 if (FL_TEXT_BUILD_PYTHON)
@@ -79,6 +89,18 @@ if (FL_TEXT_CODE_COVERAGE)
 endif()
 
 # ------------------------ Installation ------------------------
+set(_excluded_headers)             # header patterns to exclude
+set(_install_libs flashlight-text) # lib targets to install
+
+# Handle KenLM assets
+if (NOT FL_TEXT_USE_KENLM)
+  list(APPEND _excluded_headers "KenLM.*")
+else()
+  if (FL_TEXT_CODE_COVERAGE)
+    fl_text_add_coverage_to_target(TARGET flashlight-text-kenlm)
+  endif()
+  list(APPEND INSTALL_LIBS flashlight-text-kenlm)
+endif()
 
 # Install headers
 install(
@@ -90,7 +112,8 @@ install(
   PATTERN  "*.hpp"
   PATTERN "test*" EXCLUDE
   PATTERN ".git" EXCLUDE
+  PATTERN "${_excluded_headers}" EXCLUDE
 )
 
 # Install libraries and create CMake config/targets files
-fl_text_setup_install_targets(INSTALL_TARGETS flashlight-text)
+fl_text_setup_install_targets(INSTALL_TARGETS ${_install_libs})

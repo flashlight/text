@@ -21,8 +21,8 @@ jobs:
       # Use a venv for macOS runners
       - name: "Create Python virtual environment"
         run: |
-          python3 -m venv flashlight-text-env
-          source flashlight-text-env/bin/activate
+          python3 -m venv _flashlight-text-env
+          source _flashlight-text-env/bin/activate
           echo "PATH=$PATH" >> $GITHUB_ENV
         if: runner.os == 'macOS'
 
@@ -33,7 +33,7 @@ jobs:
       - name: Build wheels
         run: python -m cibuildwheel --archs auto64 --output-dir wheelhouse
         env:
-          CIBW_ENVIRONMENT: USE_KENLM=0
+          CIBW_BEFORE_BUILD: pip install -v git+https://github.com/kpu/kenlm.git
           CIBW_PRERELEASE_PYTHONS: 0
           CIBW_BUILD_VERBOSITY: 1
       - uses: actions/upload-artifact@v3

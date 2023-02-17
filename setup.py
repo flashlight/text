@@ -10,8 +10,11 @@ import datetime
 import os
 import platform
 import re
+import shutil
 import subprocess
 import sys
+import tarfile
+import urllib.request
 from pathlib import Path
 
 from setuptools import Extension, find_namespace_packages, setup
@@ -56,6 +59,51 @@ def write_version_file(version: str):
             f.write(f'git_tag = "{tag}"\n')
 
 
+def get_kenlm_paths(_basedir: str) -> str:
+    """
+    Download and untar KenLM head - headers are needed if building KenLM bindings.
+    """
+    base_dir = Path(_basedir) / "kenlm"
+
+    KENLM_SOURCE_DIR = base_dir / "kenlm"
+    kenlm_header_path = Path(KENLM_SOURCE_DIR)
+
+    if not os.path.exists(base_dir):
+        os.mkdir(base_dir)
+        KENLM_TARBALL_URL = "https://github.com/kpu/kenlm/tarball/master"
+        KENLM_TARBALL_NAME = "kenlm.tar.gz"
+        KENLM_TARBALL_PATH = base_dir / KENLM_TARBALL_NAME
+
+        res = urllib.request.urlretrieve(KENLM_TARBALL_URL, KENLM_TARBALL_PATH)
+        if res is None:
+            raise RuntimeError(
+                "Failed to download KenLM headers. Build with ",
+                "environment variable USE_KENLM=OFF to disable building with KenLM support.",
+            )
+
+        # Extract the tarfile to the KENLM_DIR
+        tar = tarfile.open(KENLM_TARBALL_PATH, "r")
+        os.mkdir(KENLM_SOURCE_DIR)
+        tar.extractall(path=KENLM_SOURCE_DIR)
+        shutil.move(
+            KENLM_SOURCE_DIR / os.listdir(KENLM_SOURCE_DIR)[0],
+            KENLM_SOURCE_DIR / "kenlm",
+        )
+
+    try:
+        import kenlm
+    except ImportError:
+        raise RuntimeError(
+            "KenLM is not installed or failed to import. ",
+            "Install with `pip install git+https://github.com/kpu/kenlm`. To build ",
+            "Flashlight Text bindings without KenLM support, set the environment ",
+            "variable USE_KENLM=0.",
+        )
+    kenlm_lib_path = kenlm.__file__
+
+    return Path(kenlm_header_path), Path(kenlm_lib_path).parent
+
+
 class CMakeExtension(Extension):
     def __init__(self, name):
         Extension.__init__(self, name, sources=[])
@@ -83,9 +131,15 @@ class CMakeBuild(build_ext):
             self.build_extensions(ext)
 
     def build_extensions(self, ext):
+        if not os.path.exists(self.build_temp):
+            os.makedirs(self.build_temp)
+
         ext_dir = str(Path(self.get_ext_fullpath(ext.name)).absolute().parent)
         source_dir = str(Path(__file__).absolute().parent)
-        use_kenlm = "OFF" if check_negative_env_flag("USE_KENLM") else "ON"
+        use_kenlm = not check_negative_env_flag("USE_KENLM")  # on unless disabled
+        kenlm_header_path, kenlm_lib_path = (
+            get_kenlm_paths(self.build_temp) if use_kenlm else (None, None)
+        )
         cmake_args = [
             "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=" + ext_dir,
             "-DPYTHON_EXECUTABLE=" + sys.executable,
@@ -94,7 +148,9 @@ class CMakeBuild(build_ext):
             "-DFL_TEXT_BUILD_TESTS=OFF",
             "-DFL_TEXT_BUILD_PYTHON=ON",
             "-DFL_TEXT_BUILD_PYTHON_PACKAGE=ON",
-            "-DFL_TEXT_USE_KENLM=" + use_kenlm,
+            "-DFL_TEXT_USE_KENLM=" + ("ON" if use_kenlm else "OFF"),
+            "-DKENLM_LIB_PATH=" + str(kenlm_lib_path),
+            "-DKENLM_HEADER_PATH=" + str(kenlm_header_path),
         ]
         cfg = "Debug" if self.debug else "Release"
         build_args = ["--config", cfg]
@@ -118,8 +174,6 @@ class CMakeBuild(build_ext):
             env.get("CXXFLAGS", ""), self.distribution.get_version()
         )
 
-        if not os.path.exists(self.build_temp):
-            os.makedirs(self.build_temp)
         subprocess.check_call(
             ["cmake", source_dir] + cmake_args, cwd=self.build_temp, env=env
         )
@@ -154,7 +208,9 @@ def main():
         long_description=long_description,
         long_description_content_type="text/markdown",
         packages=find_namespace_packages(
-            where=PACKAGE_DIR, include=["flashlight.lib.text"], exclude=["test"]
+            where=PACKAGE_DIR,
+            include=["flashlight.lib.text", "flashlight.lib.text.decoder"],
+            exclude=["test"],
         ),
         package_dir={"": PACKAGE_DIR},
         ext_modules=[

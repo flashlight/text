@@ -11,7 +11,9 @@ build_test(SRC ${DIR}/StringTest.cpp LIBS ${LIBS})
 build_test(SRC ${DIR}/decoder/Seq2SeqDecoderTest.cpp LIBS ${LIBS})
 
 if (FL_TEXT_USE_KENLM)
-  build_test(SRC ${DIR}/decoder/DecoderTest.cpp LIBS ${LIBS}
+  build_test(
+    SRC ${DIR}/decoder/DecoderTest.cpp
+    LIBS ${LIBS} flashlight-text-kenlm
     PREPROC "DECODER_TEST_DATADIR=\"${DIR}/decoder/data\"")
 endif()
 
