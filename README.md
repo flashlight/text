@@ -6,7 +6,7 @@
 | [**Citing**](#citing)
 
 [![CircleCI](https://circleci.com/gh/flashlight/text.svg?style=shield)](https://app.circleci.com/pipelines/github/flashlight/text)
-[![Join the chat at https://gitter.im/flashlight-ml/community](https://img.shields.io/gitter/room/flashlight-ml/community)](https://gitter.im/flashlight-ml/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) ![PyPI](https://img.shields.io/pypi/v/flashlight-text?color=dark%20green) ![PyPI - Format](https://img.shields.io/pypi/format/flashlight-text) [![codecov](https://codecov.io/gh/flashlight/text/branch/main/graph/badge.svg?token=rBp4AilMc0)](https://codecov.io/gh/flashlight/text) 
+[![Join the chat at https://gitter.im/flashlight-ml/community](https://img.shields.io/gitter/room/flashlight-ml/community)](https://gitter.im/flashlight-ml/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) ![PyPI](https://img.shields.io/pypi/v/flashlight-text?color=dark%20green) ![PyPI - Format](https://img.shields.io/pypi/format/flashlight-text) [![codecov](https://codecov.io/gh/flashlight/text/branch/main/graph/badge.svg?token=rBp4AilMc0)](https://codecov.io/gh/flashlight/text)
 
 *Flashlight Text* is a fast, minimal library for text-based operations. It features:
 - a high-performance, unopinionated [beam search decoder](flashlight/lib/text/decoder)
