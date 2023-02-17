@@ -15,23 +15,19 @@
 
 ## Quickstart
 
-The Flashlight Text Python package containing decoder and Dictionary components is available on PyPI **without KenLM support** via:
+The Flashlight Text Python package containing beam search decoder and Dictionary components is available on PyPI:
 ```bash
-pip install flashlight-text  # without KenLM support
+pip install flashlight-text
 ```
-For now, building from source is required for KenLM support. We'll be adding KenLM support to the PyPI package soon.
-
-To install the bindings from source, [install KenLM](https://github.com/kpu/kenlm/), then clone the repo and build:
-```shell
-git clone https://github.com/flashlight/text && cd text
-pip install .
+To enable KenLM support in Python with the decoder, KenLM must be installed via pip:
+```bash
+pip install git+https://github.com.kpu/kenlm.git
 ```
-To install without KenLM when building from source, set the environment variable `USE_KENLM=0` when running `pip install .`.
 
 See the [full Python binding documentation](bindings/python) for examples and more.
 
 ## Building and Installing
-[**From Source (C++)**](#building-from-source) | [**From Source (Python)**](bindings/python#build-instructions) | [**Adding to Your Own Project (C++)**](#adding-flashlight-text-to-a-c++-project)
+[**From Source (C++)**](#building-from-source) | [**From Source (Python)**](bindings/python#build-instructions) | [**Adding to Your Own Project (C++)**](#adding-flashlight-text-to-a-c-project)
 
 ### Requirements
 At minimum, compilation requires:
