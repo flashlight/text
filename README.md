@@ -19,7 +19,7 @@ The Flashlight Text Python package containing beam search decoder and Dictionary
 ```bash
 pip install flashlight-text
 ```
-To enable KenLM support in Python with the decoder, KenLM must be installed via pip:
+To enable optional KenLM support in Python with the decoder, KenLM must be installed via pip:
 ```bash
 pip install git+https://github.com.kpu/kenlm.git
 ```
