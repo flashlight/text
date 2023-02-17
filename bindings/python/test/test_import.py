@@ -14,6 +14,9 @@ class ImportTestCase(unittest.TestCase):
     def test_import_lib_text(self):
         from flashlight.lib.text import decoder as fl_decoder, dictionary as fl_dict
 
+        self.assertIsNotNone(fl_decoder)
+        self.assertIsNotNone(fl_dict)
+
         if os.getenv("USE_KENLM", "OFF").upper() not in [
             "OFF",
             "0",
@@ -21,7 +24,9 @@ class ImportTestCase(unittest.TestCase):
             "FALSE",
             "N",
         ]:
-            from flashlight.lib.text.decoder import KenLM
+            from flashlight.lib.text.decoder.kenlm import KenLM
+
+            self.assertIsNotNone(KenLM)
         else:
             logging.info("Flashlight Text bindings built without KenLM")
 

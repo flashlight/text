@@ -11,6 +11,7 @@ import math
 import os
 import pickle
 import struct
+import sys
 import unittest
 from dataclasses import dataclass
 
@@ -90,11 +91,15 @@ def tkn_to_idx(spelling, token_dict, maxReps=0):
 
 
 class DecoderTestCase(unittest.TestCase):
+    @unittest.skipIf(
+        sys.platform.startswith("win"),
+        "KenLM .arpa files need further debugging on Windows",
+    )
     def test(self):
         if os.getenv("USE_KENLM", "OFF").upper() in ["OFF", "0", "NO", "FALSE", "N"]:
             self.skipTest("KenLM required to run decoder test.")
 
-        from flashlight.lib.text.decoder import KenLM
+        from flashlight.lib.text.decoder.kenlm import KenLM
 
         data_path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)),

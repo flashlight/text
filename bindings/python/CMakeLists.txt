@@ -61,5 +61,15 @@ function (add_pybind11_extension ext_name)
   endif()
 endfunction ()
 
+
 add_pybind11_extension(flashlight_lib_text_decoder)
 add_pybind11_extension(flashlight_lib_text_dictionary)
+
+if (FL_TEXT_USE_KENLM)
+  add_pybind11_extension(flashlight_lib_text_decoder_kenlm)
+  target_link_libraries(
+    flashlight_lib_text_decoder_kenlm
+    PUBLIC
+    flashlight-text-kenlm
+    )
+endif()

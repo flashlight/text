@@ -143,10 +143,19 @@ commands:
         default: "ON"
     steps:
       - run:
+          name: "Install Python bindings dependencies"
+          command: pip install wheel numpy
+      - when:
+          condition:
+            equal: ["ON", << parameters.use_kenlm >>]
+          steps:
+            - run:
+                name: "Install KenLM"
+                command: |
+                  pip install git+https://github.com/kpu/kenlm.git
+      - run:
           name: "Install Python Bindings"
-          command: |
-            pip install wheel numpy && \
-            USE_KENLM=<< parameters.use_kenlm >> pip install . -v
+          command: USE_KENLM=<< parameters.use_kenlm >> pip install -v .
   run_python_tests:
     parameters:
       use_kenlm:
@@ -263,11 +272,6 @@ jobs:
       - checkout
       - install_ubuntu_build_dependencies:
           use_kenlm: << parameters.use_kenlm >>
-      - when:
-          condition:
-            equal: ["ON", << parameters.use_kenlm >>]
-          steps:
-            - install_kenlm
       - setup_python_virtualenv:
           platform: "linux"
       - install_python_bindings:
@@ -315,12 +319,6 @@ jobs:
     steps:
       - checkout
       - install_macos_build_dependencies
-      - when:
-          condition:
-            equal: ["ON", << parameters.use_kenlm >>]
-          steps:
-            - install_kenlm:
-                platform: "macos"
       - setup_python_virtualenv:
           platform: "macos"
       - install_python_bindings:
@@ -360,7 +358,7 @@ jobs:
       - setup_python_virtualenv:
           platform: "windows"
       - install_python_bindings:
-          use_kenlm: "OFF"
+          use_kenlm: << parameters.use_kenlm >>
       - run_python_tests:
           use_kenlm: << parameters.use_kenlm >>
 
@@ -405,3 +403,6 @@ workflows:
           name: "Windows VS 17 2022 | MSVC 19.33 no-standalone"
       - windows_msvc_python:
           name: "Windows VS 17 2022 | MSVC 19.33 Python"
+      - windows_msvc_python:
+          name: "Windows VS 17 2022 | MSVC 19.33 Python + KenLM"
+          use_kenlm: "ON"
