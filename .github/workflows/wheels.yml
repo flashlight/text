@@ -12,6 +12,7 @@ jobs:
         include:
           - os: self-hosted
             label: "macOS-ARM64"
+    if: github.repository == ‘flashlight/text’
     steps:
       - uses: actions/checkout@v3
         with:
