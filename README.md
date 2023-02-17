@@ -32,7 +32,7 @@ See the [full Python binding documentation](bindings/python) for examples and mo
 ### Requirements
 At minimum, compilation requires:
 - A C++ compiler with good C++17 support (e.g. gcc/g++ >= 7)
-- [CMake](https://cmake.org/) — version 3.10 or later, and ``make``
+- [CMake](https://cmake.org/) — version 3.16 or later, and ``make``
 - A Linux-based operating system.
 
 **KenLM Support:** If building with KenLM support, [KenLM](https://github.com/kpu/kenlm/) is required. To toggle KenLM support use the `FL_TEXT_USE_KENLM` CMake option or the `USE_KENLM` environment variable when building the Python bindings.
