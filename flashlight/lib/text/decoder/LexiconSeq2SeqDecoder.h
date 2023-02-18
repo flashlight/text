@@ -8,6 +8,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <unordered_map>
 
 #include "flashlight/lib/text/decoder/Decoder.h"
@@ -44,6 +45,7 @@ struct LexiconSeq2SeqDecoderState {
 
   double emittingModelScore; // Accumulated AM score so far
   double lmScore; // Accumulated LM score so far
+  std::optional<int> prevHypIdx; // Index of the hyp in the beam that lead here
 
   LexiconSeq2SeqDecoderState(
       const double score,
@@ -54,7 +56,8 @@ struct LexiconSeq2SeqDecoderState {
       const int word,
       const EmittingModelStatePtr& emittingModelState,
       const double emittingModelScore = 0,
-      const double lmScore = 0)
+      const double lmScore = 0,
+      const std::optional<int> prevHypIdx = std::nullopt)
       : score(score),
         lmState(lmState),
         lex(lex),
@@ -63,7 +66,8 @@ struct LexiconSeq2SeqDecoderState {
         word(word),
         emittingModelState(emittingModelState),
         emittingModelScore(emittingModelScore),
-        lmScore(lmScore) {}
+        lmScore(lmScore),
+        prevHypIdx(prevHypIdx) {}
 
   LexiconSeq2SeqDecoderState()
       : score(0),
@@ -74,7 +78,8 @@ struct LexiconSeq2SeqDecoderState {
         word(-1),
         emittingModelState(nullptr),
         emittingModelScore(0.),
-        lmScore(0.) {}
+        lmScore(0.),
+        prevHypIdx(std::nullopt) {}
 
   int compareNoScoreStates(const LexiconSeq2SeqDecoderState* node) const {
     int lmCmp = lmState->compare(node->lmState);
@@ -140,7 +145,11 @@ class LexiconSeq2SeqDecoder : public Decoder {
   TriePtr lexicon_;
   int eos_;
   EmittingModelUpdateFunc emittingModelUpdateFunc_;
+  // token indices for each hypo in the beam at the current timestep
   std::vector<int> rawY_;
+  // the previous hypo index to which the current hypotheses is added
+  std::vector<int> rawBeamIdx_;
+  // states for each hypo in the beam at the current timestep
   std::vector<EmittingModelStatePtr> rawPrevStates_;
   int maxOutputLength_;
   bool isLmToken_;

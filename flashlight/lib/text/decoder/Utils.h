@@ -101,6 +101,8 @@ using EmittingModelUpdateFunc = std::function<
      const std::vector<int>&, // The raw token ID of the last step for each
                               // element in the beam; the vector has as many
                               // elements as there are candidates in the beam.
+     const std::vector<int>&, // The indices of the beam hypotheses for which
+                              // the token ID at this index is being proposed.
      const std::vector<EmittingModelStatePtr>&, // State from the previous type
                                                 // steps for each candidate in
                                                 // the beam. Each hypothesis in

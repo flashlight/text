@@ -278,6 +278,7 @@ class DecoderLexiconFreeSeq2SeqTestCase(unittest.TestCase):
         N,
         T,
         prev_step_token_idxs,
+        prev_step_beam_idxs,
         prev_step_model_states,
         timestep,
     ):
@@ -292,6 +293,7 @@ class DecoderLexiconFreeSeq2SeqTestCase(unittest.TestCase):
         self.assertEqual(len(prev_step_token_idxs), len(prev_step_model_states))
         if timestep == 0:
             self.assertEqual(prev_step_token_idxs, [-1])
+            self.assertEqual(prev_step_beam_idxs, [-1])
             # This obj is actually a nullptr internally -- do not use
             self.assertEqual(len(prev_step_model_states), 1)
         else:
@@ -300,13 +302,18 @@ class DecoderLexiconFreeSeq2SeqTestCase(unittest.TestCase):
                 if timestep == 1:
                     self.assertEqual(prev_state.score, -1)
                     self.assertEqual(prev_state.token_idx, 0)
+                    self.assertEqual(
+                        prev_step_beam_idxs, [0] * len(prev_step_token_idxs)
+                    )
                 else:
                     self.assertGreater(timestep, 1)
                     scores = self.model_score_mapping[timestep - 1]
                     max_score = max(scores)
                     self.assertAlmostEqual(prev_state.score, max_score)
                     self.assertEqual(prev_state.token_idx, scores.index(max_score))
-
+                    self.assertEqual(
+                        prev_step_beam_idxs, [0] * len(prev_step_token_idxs)
+                    )
         cur_model_score = self.model_score_mapping[timestep]
 
         model_states = []

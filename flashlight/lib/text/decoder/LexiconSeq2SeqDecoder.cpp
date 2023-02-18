@@ -39,13 +39,16 @@ void LexiconSeq2SeqDecoder::decodeStep(const float* emissions, int T, int N) {
 
     // Batch forwarding
     rawY_.clear();
+    rawBeamIdx_.clear();
     rawPrevStates_.clear();
+
     for (const LexiconSeq2SeqDecoderState& prevHyp : hyp_[t]) {
       const EmittingModelStatePtr& prevState = prevHyp.emittingModelState;
       if (prevHyp.token == eos_) {
         continue;
       }
       rawY_.push_back(prevHyp.token);
+      rawBeamIdx_.push_back(prevHyp.prevHypIdx.value_or(-1));
       rawPrevStates_.push_back(prevState);
     }
     if (rawY_.size() == 0) {
@@ -55,8 +58,8 @@ void LexiconSeq2SeqDecoder::decodeStep(const float* emissions, int T, int N) {
     std::vector<std::vector<float>> emittingModelScores;
     std::vector<EmittingModelStatePtr> outStates;
 
-    std::tie(emittingModelScores, outStates) =
-        emittingModelUpdateFunc_(emissions, N, T, rawY_, rawPrevStates_, t);
+    std::tie(emittingModelScores, outStates) = emittingModelUpdateFunc_(
+        emissions, N, T, rawY_, rawBeamIdx_, rawPrevStates_, t);
 
     std::vector<size_t> idx(emittingModelScores.back().size());
 

@@ -47,6 +47,7 @@ TEST(Seq2SeqDecoderTest, LexiconFreeBasic) {
 
   const int eosIdx = 4;
   const int maxOutputLength = 3;
+  const int beamSize = 2;
 
   // Deterministic map from input token idx prediction to output scores.
   // Score geneneration is considered a martingale (i.e. not dependent on
@@ -82,6 +83,7 @@ TEST(Seq2SeqDecoderTest, LexiconFreeBasic) {
           const int N,
           const int T,
           const std::vector<int>& prevStepTokenIdxs,
+          const std::vector<int>& prevStepBeamIdxs,
           const std::vector<EmittingModelStatePtr>& prevStepModelStates,
           const int& timestep)
       -> std::pair<
@@ -99,6 +101,7 @@ TEST(Seq2SeqDecoderTest, LexiconFreeBasic) {
     if (timestep == 0) {
       // Initial token index is -1 at the first timestep
       assert(prevStepTokenIdxs == std::vector<int>{-1});
+      assert(prevStepBeamIdxs == std::vector<int>{-1});
       // Timestep 0 has prevStepModelStates == {nullptr}
       assert(prevStepModelStates.size() == 1);
       assert(prevStepModelStates.front() == nullptr);
@@ -112,6 +115,9 @@ TEST(Seq2SeqDecoderTest, LexiconFreeBasic) {
           // prev timesteps at timestep 1 both have -1 scores and token idx 0
           assert(p->score == -1);
           assert(p->tokenIdx == 0);
+          assert( // previous index of this hypo in the beam
+              prevStepBeamIdxs ==
+              std::vector<int>(prevStepTokenIdxs.size(), 0));
         } else {
           // otherwise, they have the best token score from the prev timestep
           assert(timestep > 1);
@@ -119,6 +125,9 @@ TEST(Seq2SeqDecoderTest, LexiconFreeBasic) {
           const auto maxScore = std::max_element(prev.begin(), prev.end());
           assert(p->score == *maxScore);
           assert(p->tokenIdx == (maxScore - prev.begin())); // idx of max val
+          assert( // previous index of this hypo in the beam
+              prevStepBeamIdxs ==
+              std::vector<int>(prevStepTokenIdxs.size(), 0));
         }
       }
     }
@@ -143,7 +152,7 @@ TEST(Seq2SeqDecoderTest, LexiconFreeBasic) {
   };
 
   LexiconFreeSeq2SeqDecoderOptions options;
-  options.beamSize = 2;
+  options.beamSize = beamSize;
   options.beamSizeToken = 4;
   options.beamThreshold = 1000;
   options.lmWeight = 0; // use ZeroLM
@@ -160,7 +169,7 @@ TEST(Seq2SeqDecoderTest, LexiconFreeBasic) {
   decoder.decodeStep(emissions.data(), T, N);
 
   std::vector<DecodeResult> hyps = decoder.getAllFinalHypothesis();
-  ASSERT_EQ(hyps.size(), options.beamSize);
+  ASSERT_EQ(hyps.size(), beamSize);
   ASSERT_FLOAT_EQ(hyps[0].score, 0.5 + 0.5 + 0.5);
   ASSERT_FLOAT_EQ(hyps[1].score, 0.5 + 0.2 + 0.5);
 

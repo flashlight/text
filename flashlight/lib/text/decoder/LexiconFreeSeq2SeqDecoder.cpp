@@ -37,8 +37,9 @@ void LexiconFreeSeq2SeqDecoder::decodeStep(
   for (; t < maxOutputLength_; t++) {
     candidatesReset(candidatesBestScore_, candidates_, candidatePtrs_);
 
-    // Batch forwarding
+    // Batch forwarding - computing scores from the autoregressive model
     rawY_.clear();
+    rawBeamIdx_.clear();
     rawPrevStates_.clear();
     for (const LexiconFreeSeq2SeqDecoderState& prevHyp : hyp_[t]) {
       const EmittingModelStatePtr& prevState = prevHyp.emittingModelState;
@@ -46,6 +47,7 @@ void LexiconFreeSeq2SeqDecoder::decodeStep(
         continue;
       }
       rawY_.push_back(prevHyp.token);
+      rawBeamIdx_.push_back(prevHyp.prevHypIdx.value_or(-1));
       rawPrevStates_.push_back(prevState);
     }
     if (rawY_.size() == 0) {
@@ -54,9 +56,8 @@ void LexiconFreeSeq2SeqDecoder::decodeStep(
 
     std::vector<std::vector<float>> emittingModelScores;
     std::vector<EmittingModelStatePtr> outStates;
-
-    std::tie(emittingModelScores, outStates) =
-        emittingModelUpdateFunc_(emissions, N, T, rawY_, rawPrevStates_, t);
+    std::tie(emittingModelScores, outStates) = emittingModelUpdateFunc_(
+        emissions, N, T, rawY_, rawBeamIdx_, rawPrevStates_, t);
 
     std::vector<size_t> idx(emittingModelScores.back().size());
 
@@ -75,7 +76,8 @@ void LexiconFreeSeq2SeqDecoder::decodeStep(
             eos_,
             nullptr,
             prevHyp.emittingModelScore,
-            prevHyp.lmScore);
+            prevHyp.lmScore,
+            hypo);
         continue;
       }
 
@@ -120,7 +122,8 @@ void LexiconFreeSeq2SeqDecoder::decodeStep(
               n,
               nullptr,
               prevHyp.emittingModelScore + emittingModelScore,
-              prevHyp.lmScore + lmScore);
+              prevHyp.lmScore + lmScore,
+              hypo);
         } else { /* (2) Try normal token */
           auto lmStateScorePair = lm_->score(prevHyp.lmState, n);
           auto lmScore = lmStateScorePair.second;
@@ -134,7 +137,8 @@ void LexiconFreeSeq2SeqDecoder::decodeStep(
               n,
               outState,
               prevHyp.emittingModelScore + emittingModelScore,
-              prevHyp.lmScore + lmScore);
+              prevHyp.lmScore + lmScore,
+              hypo);
         }
       }
       validHypo++;
