@@ -30,7 +30,7 @@ See the [full Python binding documentation](bindings/python) for examples and mo
 [**From Source (C++)**](#building-from-source) | [**From Source (Python)**](bindings/python#build-instructions) | [**Adding to Your Own Project (C++)**](#adding-flashlight-text-to-a-c-project)
 
 ### Requirements
-At minimum, compilation requires:
+At minimum, C++ compilation requires:
 - A C++ compiler with good C++17 support (e.g. gcc/g++ >= 7)
 - [CMake](https://cmake.org/) — version 3.16 or later, and ``make``
 - A Linux-based operating system.
