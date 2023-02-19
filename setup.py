@@ -221,7 +221,7 @@ def main():
         cmdclass={"build_ext": CMakeBuild},
         zip_safe=False,
         license="BSD licensed, as found in the LICENSE file",
-        python_requires=">=3.6",
+        python_requires=">=3.7",
         classifiers=[
             "Programming Language :: Python :: 3.7",
             "Programming Language :: Python :: 3.8",
