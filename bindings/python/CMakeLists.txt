@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16)
 
 if (NOT BUILD_SHARED_LIBS)
   message(FATAL_ERROR "Cannot build Python bindings with a static lib build: "
@@ -17,7 +17,14 @@ else()
   set(_portable_rpath_origin $ORIGIN)
 endif(APPLE)
 
-find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module)
+# TODO: use a cmake from pip via pyproject.toml and [build-system] requires
+# which gives a new (> 3.25) CMake version that will obviate the need for this
+if (CMAKE_VERSION VERSION_GREATER_EQUAL "3.18")
+  find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module)
+else()
+  find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+endif()
+
 find_package(pybind11 CONFIG)
 if (NOT pybind11_FOUND)
   message(STATUS "Could not find pybind11 -- downloading from source.")
