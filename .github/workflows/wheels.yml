@@ -37,6 +37,7 @@ jobs:
       - name: Build wheels
         run: python -m cibuildwheel --archs auto64 --output-dir wheelhouse
         env:
+          CIBW_SKIP: cp36-* # skip Python 3.6
           CIBW_BEFORE_BUILD: pip install -v git+https://github.com/kpu/kenlm.git
           CIBW_PRERELEASE_PYTHONS: 0
           CIBW_BUILD_VERBOSITY: 1
