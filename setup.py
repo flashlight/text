@@ -151,6 +151,7 @@ class CMakeBuild(build_ext):
             "-DFL_TEXT_USE_KENLM=" + ("ON" if use_kenlm else "OFF"),
             "-DKENLM_LIB_PATH=" + str(kenlm_lib_path),
             "-DKENLM_HEADER_PATH=" + str(kenlm_header_path),
+            "-DCMAKE_FIND_DEBUG_MODE=ON",
         ]
         cfg = "Debug" if self.debug else "Release"
         build_args = ["--config", cfg]
