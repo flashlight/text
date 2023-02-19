@@ -151,7 +151,6 @@ class CMakeBuild(build_ext):
             "-DFL_TEXT_USE_KENLM=" + ("ON" if use_kenlm else "OFF"),
             "-DKENLM_LIB_PATH=" + str(kenlm_lib_path),
             "-DKENLM_HEADER_PATH=" + str(kenlm_header_path),
-            "-DCMAKE_FIND_DEBUG_MODE=ON",
         ]
         cfg = "Debug" if self.debug else "Release"
         build_args = ["--config", cfg]
@@ -221,8 +220,9 @@ def main():
         cmdclass={"build_ext": CMakeBuild},
         zip_safe=False,
         license="BSD licensed, as found in the LICENSE file",
-        python_requires=">=3.7",
+        python_requires=">=3.6",
         classifiers=[
+            "Programming Language :: Python :: 3.6",
             "Programming Language :: Python :: 3.7",
             "Programming Language :: Python :: 3.8",
             "Programming Language :: Python :: 3.9",

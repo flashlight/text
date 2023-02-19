@@ -17,10 +17,10 @@ else()
   set(_portable_rpath_origin $ORIGIN)
 endif(APPLE)
 
-find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module)
 find_package(pybind11 CONFIG)
 if (NOT pybind11_FOUND)
-  message(STATUS "Could not find pybind11 -- downloading from source")
+  message(STATUS "Could not find pybind11 -- downloading from source.")
   include(${PROJECT_SOURCE_DIR}/cmake/Buildpybind11.cmake)
 endif()
 
