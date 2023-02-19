@@ -18,6 +18,7 @@ else()
 endif(APPLE)
 
 # set(PYBIND11_FINDPYTHON ON)
+set(Python_FIND_VIRTUALENV ON)
 find_package(Python REQUIRED COMPONENTS Interpreter Development)
 find_package(pybind11 CONFIG)
 if (NOT pybind11_FOUND)
