@@ -51,8 +51,6 @@ function(add_pybind11_extension ext_name)
     ${PROJECT_SOURCE_DIR}
     )
 
-  # add_dependencies(${ext_name} pybind11)
-
   # Package build versus build bindings directly with CMake
   if (FL_TEXT_BUILD_PYTHON_PACKAGE)
     set_target_properties(${ext_name} PROPERTIES
