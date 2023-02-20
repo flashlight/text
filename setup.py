@@ -222,6 +222,7 @@ def main():
         license="BSD licensed, as found in the LICENSE file",
         python_requires=">=3.6",
         classifiers=[
+            "Programming Language :: Python :: 3.6",
             "Programming Language :: Python :: 3.7",
             "Programming Language :: Python :: 3.8",
             "Programming Language :: Python :: 3.9",

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.18)
 
 if (NOT BUILD_SHARED_LIBS)
   message(FATAL_ERROR "Cannot build Python bindings with a static lib build: "
@@ -17,10 +17,14 @@ else()
   set(_portable_rpath_origin $ORIGIN)
 endif(APPLE)
 
-include(${PROJECT_SOURCE_DIR}/cmake/Buildpybind11.cmake)
-include(${PROJECT_SOURCE_DIR}/cmake/pybind11Tools.cmake)
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Module)
+find_package(pybind11 CONFIG)
+if (NOT pybind11_FOUND)
+  message(STATUS "Could not find pybind11 -- downloading from source.")
+  include(${PROJECT_SOURCE_DIR}/cmake/Buildpybind11.cmake)
+endif()
 
-function (add_pybind11_extension ext_name)
+function(add_pybind11_extension ext_name)
   string(REPLACE "_" ";" modlist ${ext_name})
   list(GET modlist -1 modname)
   list(REMOVE_AT modlist -1)
@@ -47,8 +51,6 @@ function (add_pybind11_extension ext_name)
     ${PROJECT_SOURCE_DIR}
     )
 
-  add_dependencies(${ext_name} pybind11)
-
   # Package build versus build bindings directly with CMake
   if (FL_TEXT_BUILD_PYTHON_PACKAGE)
     set_target_properties(${ext_name} PROPERTIES
@@ -59,8 +61,7 @@ function (add_pybind11_extension ext_name)
       set_target_properties(${ext_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${relpath})
     endif()
   endif()
-endfunction ()
-
+endfunction()
 
 add_pybind11_extension(flashlight_lib_text_decoder)
 add_pybind11_extension(flashlight_lib_text_dictionary)

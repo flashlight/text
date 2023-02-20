@@ -144,7 +144,7 @@ commands:
     steps:
       - run:
           name: "Install Python bindings dependencies"
-          command: pip install wheel numpy
+          command: pip install wheel numpy cmake
       - when:
           condition:
             equal: ["ON", << parameters.use_kenlm >>]

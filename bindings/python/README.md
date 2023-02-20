@@ -23,7 +23,7 @@ pip install git+https://github.com.kpu/kenlm.git
 ## Installation
 ### Dependencies
 We require `python >= 3.6` with the following packages installed:
-- [cmake](https://cmake.org/) >= 3.16, and `make` (installable via `pip install cmake`)
+- [cmake](https://cmake.org/) >= 3.18, and `make` (installable via `pip install cmake`)
 - [KenLM](https://github.com/kpu/kenlm) (must be installed `pip install git+https://github.com/kpu/kenlm.git`)
 
 ### Build Instructions
