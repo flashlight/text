@@ -179,22 +179,32 @@ commands:
             mkdir -p test_project && cd test_project && \
             echo -e "\
               #include <flashlight/lib/text/dictionary/Dictionary.h> \n
+              #if USE_KENLM                                          \n
+              #include <flashlight/lib/text/decoder/lm/KenLM.h>      \n
+              #endif                                                 \n
               #include <iostream>                                    \n
               int main() {                                           \n
                 fl::lib::text::Dictionary myDict;                    \n
                 myDict.addEntry(\"A\", 1);                           \n
                 myDict.addEntry(\"B\", 2);                           \n
+                #if USE_KENLM                                        \n
+                fl::lib::text::KenLM kenlm("/tmp/foo.lm", myDict);   \n
+                #endif                                               \n
                 return 0;                                            \n
               }                                                      \n
             " > main.cpp && \
             echo -e "\
-              cmake_minimum_required(VERSION 3.10)                            \n
-              project(test_project)                                           \n
-              set(CMAKE_CXX_STANDARD 17)                                      \n
-              set(CMAKE_CXX_STANDARD_REQUIRED ON)                             \n
-              add_executable(main main.cpp)                                   \n
-              find_package(flashlight-text CONFIG REQUIRED)                   \n
-              target_link_libraries(main PRIVATE flashlight::flashlight-text) \n
+              cmake_minimum_required(VERSION 3.16)                                            \n
+              project(test_project)                                                           \n
+              set(CMAKE_CXX_STANDARD 17)                                                      \n
+              set(CMAKE_CXX_STANDARD_REQUIRED ON)                                             \n
+              add_executable(main main.cpp)                                                   \n
+              find_package(flashlight-text CONFIG REQUIRED)                                   \n
+              target_link_libraries(main PRIVATE flashlight::flashlight-text)                 \n
+              if (FL_TEXT_USE_KENLM) # propagated from the config.cmake                       \n
+                target_link_libraries(main PRIVATE flashlight::flashlight-text-kenlm)         \n
+              endif()                                                                         \n
+              target_compile_definitions(main PRIVATE USE_KENLM=$<BOOL:${FL_TEXT_USE_KENLM}>) \n
             " > CMakeLists.txt
       - run:
           name: Build dependent external project
