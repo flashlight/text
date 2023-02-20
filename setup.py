@@ -142,7 +142,7 @@ class CMakeBuild(build_ext):
         )
         cmake_args = [
             "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=" + ext_dir,
-            "-DPYTHON3_EXECUTABLE=" + sys.executable,
+            "-DPython3_EXECUTABLE=" + sys.executable,
             "-DBUILD_SHARED_LIBS=ON",
             "-DFL_TEXT_BUILD_STANDALONE=OFF",
             "-DFL_TEXT_BUILD_TESTS=OFF",
