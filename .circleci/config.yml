@@ -201,7 +201,7 @@ commands:
               add_executable(main main.cpp)                                                   \n
               find_package(flashlight-text CONFIG REQUIRED)                                   \n
               target_link_libraries(main PRIVATE flashlight::flashlight-text)                 \n
-              if (FL_TEXT_USE_KENLM) # propagated from the config.cmake                       \n
+              if (FL_TEXT_USE_KENLM)                                                          \n
                 target_link_libraries(main PRIVATE flashlight::flashlight-text-kenlm)         \n
               endif()                                                                         \n
               target_compile_definitions(main PRIVATE USE_KENLM=$<BOOL:${FL_TEXT_USE_KENLM}>) \n
