@@ -12,30 +12,18 @@ orbs:
 
 commands:
   install_ubuntu_build_dependencies:
-    parameters:
-      use_kenlm:
-        type: string
     steps:
       - run:
           name: "Install Build Dependencies"
           command: |
             sudo apt -y update && \
             sudo apt -y install build-essential python3-dev python3-pip python3-venv cmake
-      - when:
-          condition:
-            equal: ["ON", << parameters.use_kenlm >>]
-          steps:
-            - run:
-                name: "Install KenLM Build Dependencies"
-                command: |
-                  sudo apt -y install libboost-program-options-dev libboost-system-dev libboost-thread-dev \
-                  libboost-test-dev liblzma-dev libbz2-dev zlib1g-dev
   install_macos_build_dependencies:
     steps:
       - run:
           name: "Install Build Dependencies"
           command: |
-            brew install cmake googletest boost zlib bzip2 lzip
+            brew install cmake googletest
   install_msvc_build_dependencies:
     steps:
       - run:
@@ -246,8 +234,7 @@ jobs:
       - image: cimg/base:2021.04
     steps:
       - checkout
-      - install_ubuntu_build_dependencies:
-          use_kenlm: << parameters.use_kenlm >>
+      - install_ubuntu_build_dependencies
       - when:
           condition:
             and:
@@ -280,8 +267,7 @@ jobs:
       - image: cimg/base:2021.04
     steps:
       - checkout
-      - install_ubuntu_build_dependencies:
-          use_kenlm: << parameters.use_kenlm >>
+      - install_ubuntu_build_dependencies
       - setup_python_virtualenv:
           platform: "linux"
       - install_python_bindings:
