@@ -34,7 +34,6 @@ option(FL_TEXT_BUILD_TESTS "Build tests" ON)
 option(FL_TEXT_BUILD_STANDALONE "Build standalone installation" ON)
 option(FL_TEXT_USE_KENLM "Use KenLM in flashlight libraries build" ON)
 option(FL_TEXT_BUILD_PYTHON "Build Python bindings" OFF)
-option(FL_TEXT_BUILD_PYTHON_PACKAGE "Build packaging-ready Python artifacts" OFF)
 
 # ------------------------ Build ------------------------
 
