@@ -12,4 +12,3 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(pybind11)
-add_subdirectory(${pybind11_SOURCE_DIR})
