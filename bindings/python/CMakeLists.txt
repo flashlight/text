@@ -51,12 +51,16 @@ function(add_pybind11_extension ext_name)
     ${PROJECT_SOURCE_DIR}
     )
 
-  set_target_properties(${ext_name} PROPERTIES
-    OUTPUT_NAME ${ext_name}
-    BUILD_RPATH ${_portable_rpath_origin})
-
-  if (CMAKE_LIBRARY_OUTPUT_DIRECTORY)
-    set_target_properties(${ext_name} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${relpath})
+  # Package build versus build bindings directly with CMake
+  if (FL_TEXT_BUILD_PYTHON_PACKAGE)
+    set_target_properties(${ext_name} PROPERTIES
+      OUTPUT_NAME ${ext_name}
+      BUILD_RPATH ${_portable_rpath_origin})
+  else()
+    if (CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+      set_target_properties(${ext_name} PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${relpath})
+    endif()
   endif()
 endfunction()
 

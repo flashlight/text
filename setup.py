@@ -147,6 +147,7 @@ class CMakeBuild(build_ext):
             "-DFL_TEXT_BUILD_STANDALONE=OFF",
             "-DFL_TEXT_BUILD_TESTS=OFF",
             "-DFL_TEXT_BUILD_PYTHON=ON",
+            "-DFL_TEXT_BUILD_PYTHON_PACKAGE=ON",
             "-DFL_TEXT_USE_KENLM=" + ("ON" if use_kenlm else "OFF"),
             "-DKENLM_LIB_PATH=" + str(kenlm_lib_path),
             "-DKENLM_HEADER_PATH=" + str(kenlm_header_path),
