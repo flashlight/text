@@ -12,8 +12,14 @@
 #ifdef USE_KENLM_FROM_LANGTECH
 #include "language_technology/jedi/lm/model.hh"
 #else
+#if __has_include(<kenlm/lm/model.hh>)
+#include <kenlm/lm/model.hh>
+#elif __has_include(<lm/model.hh>)
 #include <lm/model.hh>
-#endif
+#else
+#error "KenLM header not found (kenlm/lm/model.hh)."
+#endif // __has_include
+#endif // USE_KENLM_FROM_LANGTECH
 
 namespace fl {
 namespace lib {
