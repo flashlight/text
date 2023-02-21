@@ -99,7 +99,7 @@ else()
   if (FL_TEXT_CODE_COVERAGE)
     fl_text_add_coverage_to_target(TARGET flashlight-text-kenlm)
   endif()
-  list(APPEND INSTALL_LIBS flashlight-text-kenlm)
+  list(APPEND _install_libs flashlight-text-kenlm)
 endif()
 
 # Install headers
