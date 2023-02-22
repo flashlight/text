@@ -14,9 +14,6 @@ target_sources(
 if (FL_TEXT_USE_KENLM)
   find_package(kenlm CONFIG)
   if (NOT TARGET kenlm::kenlm)
-    # Some installations only have a single libkenlm. When installing
-    # Python bindings, no kenlm_utils lib is present
-    set(KENLM_DISABLE_UTILS_SEARCH ${FL_TEXT_BUILD_PYTHON_PACKAGE})
     find_package(kenlm)
     if (NOT kenlm_FOUND)
       if (FL_TEXT_BUILD_STANDALONE)
@@ -29,6 +26,7 @@ if (FL_TEXT_USE_KENLM)
     endif()
     if (FL_TEXT_BUILD_STANDALONE)
       # Install the module so downstream projects can find the lib
+      # assuming it wasn't found with an exported target config
       install(
         FILES ${PROJECT_SOURCE_DIR}/cmake/Findkenlm.cmake
         DESTINATION ${FL_INSTALL_CMAKE_DIR}
@@ -47,7 +45,6 @@ if (FL_TEXT_USE_KENLM)
     PRIVATE
     flashlight-text
     kenlm::kenlm
-    $<$<NOT:$<BOOL:${FL_TEXT_BUILD_PYTHON_PACKAGE}>>:kenlm::kenlm_util>
     )
 
   target_compile_definitions(

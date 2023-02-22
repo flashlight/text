@@ -27,6 +27,7 @@ commands:
           steps:
             - run:
                 name: "Install KenLM Build Dependencies"
+                # TODO: remove boost once https://github.com/kpu/kenlm/pull/418 is merged
                 command: |
                   sudo apt -y install libboost-program-options-dev libboost-system-dev libboost-thread-dev \
                   libboost-test-dev liblzma-dev libbz2-dev zlib1g-dev
@@ -34,6 +35,7 @@ commands:
     steps:
       - run:
           name: "Install Build Dependencies"
+          # TODO: remove boost once https://github.com/kpu/kenlm/pull/418 is merged
           command: |
             brew install cmake googletest boost zlib bzip2 lzip
   install_msvc_build_dependencies:
