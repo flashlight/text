@@ -121,9 +121,9 @@ class CMakeBuild(build_ext):
 
         cmake_version = re.search(r"version\s*([\d.]+)", out.decode().lower()).group(1)
         cmake_version_tuple = tuple([int(v) for v in cmake_version.split(".")])
-        if cmake_version_tuple < (3, 16):
+        if cmake_version_tuple < (3, 18):
             raise RuntimeError(
-                f"CMake >= 3.16 is required to build flashlight-text; found {cmake_version}"
+                f"CMake >= 3.18 is required to build flashlight-text; found {cmake_version}"
             )
 
         # our CMakeLists builds all the extensions at once
@@ -226,6 +226,8 @@ def main():
             "Programming Language :: Python :: 3.7",
             "Programming Language :: Python :: 3.8",
             "Programming Language :: Python :: 3.9",
+            "Programming Language :: Python :: 3.10",
+            "Programming Language :: Python :: 3.11",
             "Topic :: Scientific/Engineering :: Artificial Intelligence",
             "Operating System :: OS Independent",
         ],
