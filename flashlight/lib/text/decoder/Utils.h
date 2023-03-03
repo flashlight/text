@@ -116,6 +116,8 @@ using EmittingModelUpdateFunc = std::function<
      int& // The current time step being decoded -- 0 --> T
      )>;
 
+using DiversityFunction = std::function<double>(const std::vector<int>&, const int);
+
 /* ===================== Candidate-related operations ===================== */
 
 template <class DecoderState>

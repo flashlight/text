@@ -32,6 +32,9 @@ void LexiconFreeSeq2SeqDecoder::decodeStep(
   hyp_[0].clear();
   hyp_[0].emplace_back(0.0, lm_->start(0), nullptr, -1, nullptr);
 
+  // Size of each group
+  int grpSize = opt_.beamSize / opt_.numBeamGroups;
+
   // Decode frame by frame
   int t = 0;
   for (; t < maxOutputLength_; t++) {
@@ -61,87 +64,104 @@ void LexiconFreeSeq2SeqDecoder::decodeStep(
 
     std::vector<size_t> idx(emittingModelScores.back().size());
 
-    // Generate new hypothesis
-    for (int hypo = 0, validHypo = 0; hypo < hyp_[t].size(); hypo++) {
-      const LexiconFreeSeq2SeqDecoderState& prevHyp = hyp_[t][hypo];
-      // Change nothing for completed hypothesis
-      if (prevHyp.token == eos_) {
-        candidatesAdd(
-            candidates_,
-            candidatesBestScore_,
-            opt_.beamThreshold,
-            prevHyp.score,
-            prevHyp.lmState,
-            &prevHyp,
-            eos_,
-            nullptr,
-            prevHyp.emittingModelScore,
-            prevHyp.lmScore,
-            hypo);
-        continue;
-      }
+    // Iterate through groups, if only one group, just vanilla BS
+    int hypo = 0;
+    int validHypo = 0;
+    
+    uniqueCandidateTokens_.clear();
 
-      const EmittingModelStatePtr& outState = outStates[validHypo];
-      if (!outState) {
-        validHypo++;
-        continue;
-      }
-
-      std::iota(idx.begin(), idx.end(), 0);
-      if (emittingModelScores[validHypo].size() > opt_.beamSizeToken) {
-        std::partial_sort(
-            idx.begin(),
-            idx.begin() + opt_.beamSizeToken,
-            idx.end(),
-            [&emittingModelScores, &validHypo](
-                const size_t& l, const size_t& r) {
-              return emittingModelScores[validHypo][l] >
-                  emittingModelScores[validHypo][r];
-            });
-      }
-
-      for (int r = 0; r <
-           std::min(emittingModelScores[validHypo].size(),
-                    (size_t)opt_.beamSizeToken);
-           r++) {
-        int n = idx[r];
-        double emittingModelScore = emittingModelScores[validHypo][n];
-
-        if (n == eos_) { /* (1) Try eos */
-          auto lmStateScorePair = lm_->finish(prevHyp.lmState);
-          auto lmScore = lmStateScorePair.second;
-
+    for (int grp = 0; grp < opt_.numBeamGroups; grp++) {
+      // Generate new hypothesis
+      for (hypo, validHypo ; hypo < std::min(hyp_[t].size(), (size_t)grpSize); hypo++) {
+        const LexiconFreeSeq2SeqDecoderState& prevHyp = hyp_[t][hypo];
+        // Change nothing for completed hypothesis
+        if (prevHyp.token == eos_) {
           candidatesAdd(
               candidates_,
               candidatesBestScore_,
               opt_.beamThreshold,
-              prevHyp.score + emittingModelScore + opt_.eosScore +
-                  opt_.lmWeight * lmScore,
-              lmStateScorePair.first,
+              prevHyp.score,
+              prevHyp.lmState,
               &prevHyp,
-              n,
+              eos_,
               nullptr,
-              prevHyp.emittingModelScore + emittingModelScore,
-              prevHyp.lmScore + lmScore,
+              prevHyp.emittingModelScore,
+              prevHyp.lmScore,
               hypo);
-        } else { /* (2) Try normal token */
-          auto lmStateScorePair = lm_->score(prevHyp.lmState, n);
-          auto lmScore = lmStateScorePair.second;
-          candidatesAdd(
-              candidates_,
-              candidatesBestScore_,
-              opt_.beamThreshold,
-              prevHyp.score + emittingModelScore + opt_.lmWeight * lmScore,
-              lmStateScorePair.first,
-              &prevHyp,
-              n,
-              outState,
-              prevHyp.emittingModelScore + emittingModelScore,
-              prevHyp.lmScore + lmScore,
-              hypo);
+          continue;
         }
+
+        const EmittingModelStatePtr& outState = outStates[validHypo];
+        if (!outState) {
+          validHypo++;
+          continue;
+        }
+
+        std::iota(idx.begin(), idx.end(), 0);
+        if (emittingModelScores[validHypo].size() > opt_.beamSizeToken) {
+          std::partial_sort(
+              idx.begin(),
+              idx.begin() + opt_.beamSizeToken,
+              idx.end(),
+              [&emittingModelScores, &validHypo](
+                  const size_t& l, const size_t& r) {
+                return emittingModelScores[validHypo][l] >
+                    emittingModelScores[validHypo][r];
+              });
+        }
+
+        for (int r = 0; r <
+            std::min(emittingModelScores[validHypo].size(),
+                      (size_t)opt_.beamSizeToken);
+            r++) {
+          int n = idx[r];
+
+          double diversityFactor = 0.0;
+          if (grp > 0) {
+            // Need to get a set of all the tokens chosen from other groups
+            // Can only apply the diversity factor after first run through
+            diversityFactor = diversityFunction_(uniqueCandidateTokens_, n);
+          }
+          // Augment log probabilities with diveristy penalty
+          double emittingModelScore = emittingModelScores[validHypo][n] + diversityFactor;
+
+          if (n == eos_) { /* (1) Try eos */
+            auto lmStateScorePair = lm_->finish(prevHyp.lmState);
+            auto lmScore = lmStateScorePair.second;
+
+            candidatesAdd(
+                candidates_,
+                candidatesBestScore_,
+                opt_.beamThreshold,
+                prevHyp.score + emittingModelScore + opt_.eosScore +
+                    opt_.lmWeight * lmScore,
+                lmStateScorePair.first,
+                &prevHyp,
+                n,
+                nullptr,
+                prevHyp.emittingModelScore + emittingModelScore,
+                prevHyp.lmScore + lmScore,
+                hypo);
+          } else { /* (2) Try normal token */
+            auto lmStateScorePair = lm_->score(prevHyp.lmState, n);
+            auto lmScore = lmStateScorePair.second;
+            candidatesAdd(
+                candidates_,
+                candidatesBestScore_,
+                opt_.beamThreshold,
+                prevHyp.score + emittingModelScore + opt_.lmWeight * lmScore,
+                lmStateScorePair.first,
+                &prevHyp,
+                n,
+                outState,
+                prevHyp.emittingModelScore + emittingModelScore,
+                prevHyp.lmScore + lmScore,
+                hypo);
+            uniqueCandidateTokens_.insert(n);
+          }
+        }
+        validHypo++;
       }
-      validHypo++;
     }
     candidatesStore(
         candidates_,
