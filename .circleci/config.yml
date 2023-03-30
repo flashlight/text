@@ -374,6 +374,50 @@ jobs:
       - run_python_tests:
           use_kenlm: << parameters.use_kenlm >>
 
+  linux-wheels:
+    working_directory: ~/linux-wheels
+    docker:
+      - image: circleci/python:3.9
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Linux x64 wheels
+          command: |
+            pip3 install --user cibuildwheel==2.12.1
+            cibuildwheel --output-dir wheelhouse
+      - store_artifacts:
+          path: wheelhouse/
+
+  linux-aarch64-wheels:
+    working_directory: ~/linux-aarch64-wheels
+    machine:
+      image: ubuntu-2004:2022.04.1
+    resource_class: arm.medium
+    steps:
+      - checkout
+      - run:
+          name: Build the Linux aarch64 wheels.
+          command: |
+            python3 -m pip install --user cibuildwheel==2.12.1
+            python3 -m cibuildwheel --output-dir wheelhouse
+      - store_artifacts:
+          path: wheelhouse/
+
+  osx-wheels:
+    working_directory: ~/osx-wheels
+    macos:
+      xcode: 12.5.1
+    steps:
+      - checkout
+      - run:
+          name: Build the OS X wheels.
+          command: |
+            pip3 install cibuildwheel==2.12.1
+            cibuildwheel --output-dir wheelhouse
+      - store_artifacts:
+          path: wheelhouse/
+
 workflows:
   build-test:
     jobs:
