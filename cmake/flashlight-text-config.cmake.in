@@ -20,12 +20,12 @@
 #
 
 # Dependencies
+include(CMakeFindDependencyMacro)
+find_dependency(Threads)
 # If not building standalone, don't try to find upstream deps,
 # as many of these find modules won't exist
 if (@FL_TEXT_BUILD_STANDALONE@)
   list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
-  include(CMakeFindDependencyMacro)
-  find_dependency(Threads)
   if (@FL_TEXT_USE_KENLM@)
     find_dependency(kenlm)
   endif()
