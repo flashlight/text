@@ -2,8 +2,7 @@ version: 2.1
 
 macos_env: &macos_env
   macos:
-    xcode: 13.4.1
-  resource_class: large
+    xcode: 14.2.0
   environment:
     HOMEBREW_NO_AUTO_UPDATE: "1"
 
@@ -291,8 +290,10 @@ jobs:
       - run_python_tests:
           use_kenlm: << parameters.use_kenlm >>
 
-  macos_clang_13:
+  macos_clang:
     parameters:
+      resource_class:
+        type: string
       use_kenlm:
         type: string
         default: "ON"
@@ -321,12 +322,15 @@ jobs:
           build_shared_libs: << parameters.build_shared_libs >>
           build_standalone: << parameters.build_standalone >>
 
-  macos_clang_13_python:
+  macos_clang_python:
     parameters:
+      resource_class:
+        type: string
       use_kenlm:
         type: string
         default: "ON"
     <<: *macos_env
+    resource_class: << parameters.resource_class >>
     shell: /bin/bash -eux -o pipefail
     steps:
       - checkout
@@ -403,13 +407,19 @@ workflows:
           use_kenlm: "ON"
           build_shared_libs: "ON"
           build_standalone: "OFF"
-      - macos_clang_13:
-          name: "macOS Clang 13 no-standalone - shared + KenLM"
+      - macos_clang:
+          matrix:
+            parameters:
+              resource_class: [macos.x86.medium.gen2, macos.m1.large.gen1]
+          name: "macOS (<< matrix.resource_class >>) Clang 13 no-standalone - shared + KenLM"
           use_kenlm: "ON"
           build_shared_libs: "ON"
           build_standalone: "OFF"
-      - macos_clang_13_python:
-          name: "macOS Clang 13 Python + KenLM"
+      - macos_clang_python:
+          matrix:
+            parameters:
+              resource_class: [macos.x86.medium.gen2, macos.m1.large.gen1]
+          name: "macOS (<< matrix.resource_class >>) Clang 13 Python + KenLM"
           use_kenlm: "ON"
       - windows_msvc:
           name: "Windows VS 17 2022 | MSVC 19.33 no-standalone"
