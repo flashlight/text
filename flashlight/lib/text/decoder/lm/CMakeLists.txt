@@ -24,14 +24,12 @@ if (FL_TEXT_USE_KENLM)
           "Install KenLM or set the KENLM_ROOT environment variable.")
       endif()
     endif()
-    if (FL_TEXT_BUILD_STANDALONE)
-      # Install the module so downstream projects can find the lib
-      # assuming it wasn't found with an exported target config
-      install(
-        FILES ${PROJECT_SOURCE_DIR}/cmake/Findkenlm.cmake
-        DESTINATION ${FL_INSTALL_CMAKE_DIR}
-        )
-    endif()
+    # Install the module so downstream projects can find the lib
+    # assuming it wasn't found with an exported target config
+    install(
+      FILES ${PROJECT_SOURCE_DIR}/cmake/Findkenlm.cmake
+      DESTINATION ${FL_INSTALL_CMAKE_DIR}
+    )
   endif()
 
   target_sources(
