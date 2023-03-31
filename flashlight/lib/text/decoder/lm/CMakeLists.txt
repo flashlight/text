@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.10)
 
 set(FL_TEXT_KENLM_MAX_ORDER 6 CACHE STRING "Maximum ngram order for KenLM")
 
@@ -23,16 +23,14 @@ if (FL_TEXT_USE_KENLM)
         message(FATAL_ERROR "KenLM not found but FL_TEXT_USE_KENLM enabled. "
           "Install KenLM or set the KENLM_ROOT environment variable.")
       endif()
-    else()
-      set(_FL_TEXT_FIND_KENLM_USED_MODULE ON) # for flashlight-text-config.cmake
-      # [KenLM was found via Findkenlm.cmake]
+    endif()
+    if (FL_TEXT_BUILD_STANDALONE)
       # Install the module so downstream projects can find the lib
       # assuming it wasn't found with an exported target config
-      # *and* KenLM wasn't fetched/built from source at build time
       install(
         FILES ${PROJECT_SOURCE_DIR}/cmake/Findkenlm.cmake
         DESTINATION ${FL_INSTALL_CMAKE_DIR}
-      )
+        )
     endif()
   endif()
 
