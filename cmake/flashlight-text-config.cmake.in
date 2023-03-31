@@ -23,11 +23,16 @@
 # Dependencies
 include(CMakeFindDependencyMacro)
 find_dependency(Threads)
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}) # if Findkenlm.cmake
 if (@FL_TEXT_USE_KENLM@)
-  find_dependency(kenlm)
-endif()
-list(REMOVE_AT CMAKE_MODULE_PATH -1) # remove from module path
+  if (@_FL_TEXT_FIND_KENLM_USED_MODULE@)
+    # Findkenlm.cmake was required to locate KenLM at build time
+    list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}) # Findkenlm.cmake
+    find_dependency(kenlm)
+    list(REMOVE_AT CMAKE_MODULE_PATH -1) # remove from module path
+  else()
+    find_dependency(kenlm) # use config
+  endif() # _FL_TEXT_FIND_KENLM_USED_MODULE
+endif() # FL_TEXT_USE_KENLM
 
 ################################################################################
 
