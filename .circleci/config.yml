@@ -6,6 +6,10 @@ macos_env: &macos_env
   environment:
     HOMEBREW_NO_AUTO_UPDATE: "1"
 
+linux_env: &linux_env
+  machine:
+    image: ubuntu-2004:202204-01
+
 orbs:
   win: circleci/windows@5.0.0
 
@@ -246,8 +250,7 @@ jobs:
       run_codecov:
         type: string
         default: "OFF"
-    machine:
-      image: ubuntu-2004:202101-01
+    <<: *linux_env
     resource_class: << parameters.resource_class >>
     steps:
       - checkout
@@ -283,8 +286,7 @@ jobs:
       use_kenlm:
         type: string
         default: "ON"
-    machine:
-      image: ubuntu-2004:202101-01
+    <<: *linux_env
     resource_class: << parameters.resource_class >>
     steps:
       - checkout
@@ -386,44 +388,28 @@ jobs:
       - run_python_tests:
           use_kenlm: << parameters.use_kenlm >>
 
-  linux-wheels:
-    working_directory: ~/linux-wheels
-    docker:
-      - image: circleci/python:3.9
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Build Linux x64 wheels
-          command: |
-            pip3 install --user cibuildwheel==2.12.1
-            cibuildwheel --output-dir wheelhouse
-      - store_artifacts:
-          path: wheelhouse/
-
-  linux-aarch64-wheels:
-    working_directory: ~/linux-aarch64-wheels
-    machine:
-      image: ubuntu-2004:2022.04.1
-    resource_class: arm.medium
+  linux_arm64_wheels:
+    working_directory: ~/linux_arm64_wheels
+    <<: *linux_env
+    resource_class: arm.xlarge
     steps:
       - checkout
       - run:
-          name: Build the Linux aarch64 wheels.
+          name: Build Linux arm64 wheels
           command: |
             python3 -m pip install --user cibuildwheel==2.12.1
             python3 -m cibuildwheel --output-dir wheelhouse
       - store_artifacts:
           path: wheelhouse/
 
-  osx-wheels:
-    working_directory: ~/osx-wheels
-    macos:
-      xcode: 12.5.1
+  macos_arm64_wheels:
+    working_directory: ~/macos_arm64_wheels
+    <<: *macos_env
+    resource_class: macos.m1.large.gen1
     steps:
       - checkout
       - run:
-          name: Build the OS X wheels.
+          name: Build macOS wheels
           command: |
             pip3 install cibuildwheel==2.12.1
             cibuildwheel --output-dir wheelhouse
@@ -480,3 +466,7 @@ workflows:
       - windows_msvc_python:
           name: "Windows VS 17 2022 | MSVC 19.33 Python + KenLM"
           use_kenlm: "ON"
+      - linux_arm64_wheels:
+          name: "Build Python Wheels / Build wheels on ubuntu-20.04 arm64"
+      - macos_arm64_wheels:
+          name: "Build Python Wheels / Build wheels on macOS-14 arm64"
