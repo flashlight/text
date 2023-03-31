@@ -221,6 +221,11 @@ commands:
   cibw_build_wheels:
     steps:
       - run:
+          name: Compute wheel version
+          command: |
+            echo "$(python bindings/python/compute_version.py)" > BUILD_VERSION.txt
+            echo "Building version $(cat BUILD_VERSION.txt)"
+      - run:
           name: Build wheels
           command: |
             python3 -m pip install --user cibuildwheel==2.12.1
@@ -402,7 +407,7 @@ jobs:
   linux_arm64_wheels:
     working_directory: ~/linux_arm64_wheels
     <<: *linux_env
-    resource_class: arm.xlarge
+    resource_class: arm.2xlarge
     steps:
       - checkout
       - cibw_build_wheels
@@ -415,6 +420,12 @@ jobs:
     resource_class: macos.m1.large.gen1
     steps:
       - checkout
+      - run:
+          name: Install macOS arm64-compatible Python 3.8.10
+          command: |
+            curl -o /tmp/Python38.pkg https://www.python.org/ftp/python/3.8.10/python-3.8.10-macos11.pkg
+            sudo installer -pkg /tmp/Python38.pkg -target /
+              sh "/Applications/Python 3.8/Install Certificates.command"
       - cibw_build_wheels
       - store_artifacts:
           path: wheelhouse/
