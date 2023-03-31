@@ -246,7 +246,7 @@ jobs:
         type: string
         default: "OFF"
     machine:
-      image: ubuntu-2004:202101-01
+      image: ubuntu-2204:2023.02.1
     resource_class: << parameters.resource_class >>
     steps:
       - checkout
@@ -283,7 +283,7 @@ jobs:
         type: string
         default: "ON"
     machine:
-      image: ubuntu-2004:202101-01
+      image: ubuntu-2204:2023.02.1
     resource_class: << parameters.resource_class >>
     steps:
       - checkout
@@ -394,7 +394,7 @@ workflows:
               use_kenlm: ["ON", "OFF"]
               build_shared_libs: ["ON", "OFF"]
               build_standalone: ["ON", "OFF"]
-          name: "Ubuntu 20.04 (<< matrix.resource_class >>) gcc-9 kenlm=<< matrix.use_kenlm >> shared_libs=<< matrix.build_shared_libs >> standalone=<< matrix.build_standalone >>"
+          name: "Ubuntu 22.04 (<< matrix.resource_class >>) gcc-9 kenlm=<< matrix.use_kenlm >> shared_libs=<< matrix.build_shared_libs >> standalone=<< matrix.build_standalone >>"
       - ubuntu_20_gcc_9:
           name: "Compute Code Coverage and Upload to Codecov"
           resource_class: xlarge
@@ -406,7 +406,7 @@ workflows:
             parameters:
               resource_class: [xlarge, arm.xlarge]
               use_kenlm: ["ON", "OFF"]
-          name: "Ubuntu 20.04 (<< matrix.resource_class >>) gcc-9 Python kenlm=<< matrix.use_kenlm >>"
+          name: "Ubuntu 22.04 (<< matrix.resource_class >>) gcc-9 Python kenlm=<< matrix.use_kenlm >>"
       - macos_clang:
           matrix:
             parameters:
