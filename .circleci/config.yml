@@ -231,7 +231,7 @@ commands:
             python3 -m pip install --user cibuildwheel==2.12.1
             python3 -m cibuildwheel --output-dir wheelhouse
           environment:
-            CIBW_BEFORE_BUILD: pip install -v git+https://github.com/kpu/kenlm.git
+            CIBW_BEFORE_BUILD: pip install -v git+https://github.com/kpu/kenlm.git && pip install cmake
             CIBW_PRERELEASE_PYTHONS: 0
             CIBW_BUILD_VERBOSITY: 1
   run_codecov:
