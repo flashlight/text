@@ -14,27 +14,22 @@ target_sources(
 if (FL_TEXT_USE_KENLM)
   find_package(kenlm CONFIG)
   if (NOT TARGET kenlm::kenlm)
-    find_package(kenlm)
-    if (NOT kenlm_FOUND)
+    if (FL_TEXT_BUILD_PYTHON)
+      # ONLY for Python installation, try to use Findkenlm.cmake to locate
+      # KenLM libs (and headers) since libkenlm's in site-packages w/o a config
+      find_package(kenlm MODULE REQUIRED) # use Findkenlm.cmake
+    else()
+      # Not building Python bindings - download standalone or fail
       if (FL_TEXT_BUILD_STANDALONE)
         message(STATUS "KenLM not found - will download and build from source")
         include(${PROJECT_SOURCE_DIR}/cmake/BuildKenlm.cmake)
       else()
-        message(FATAL_ERROR "KenLM not found but FL_TEXT_USE_KENLM enabled. "
-          "Install KenLM or set the KENLM_ROOT environment variable.")
-      endif()
-    else()
-      set(_FL_TEXT_FIND_KENLM_USED_MODULE ON) # for flashlight-text-config.cmake
-      # [KenLM was found via Findkenlm.cmake]
-      # Install the module so downstream projects can find the lib
-      # assuming it wasn't found with an exported target config
-      # *and* KenLM wasn't fetched/built from source at build time
-      install(
-        FILES ${PROJECT_SOURCE_DIR}/cmake/Findkenlm.cmake
-        DESTINATION ${FL_INSTALL_CMAKE_DIR}
-      )
-    endif()
-  endif()
+        message(WARNING "KenLM not found but FL_TEXT_USE_KENLM enabled. "
+          "Install KenLM to continue.")
+        find_package(kenlm CONFIG REQUIRED) # find again to display full errors
+      endif() # FL_TEXT_BUILD_STANDALONE
+    endif() # FL_TEXT_BUILD_PYTHON
+  endif() # NOT TARGET kenlm::kenlm
 
   target_sources(
     flashlight-text-kenlm
