@@ -90,6 +90,7 @@ commands:
           command: |
             mkdir build && \
             cmake -S . -B build \
+              -DCMAKE_BUILD_TYPE=RelWithDebInfo \
               -DBUILD_SHARED_LIBS=<< parameters.build_shared_libs >> \
               -DFL_TEXT_USE_KENLM=<< parameters.use_kenlm >> \
               -DFL_TEXT_BUILD_STANDALONE=<< parameters.build_standalone >> \

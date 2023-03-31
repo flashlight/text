@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.16)
 
 set(FL_TEXT_KENLM_MAX_ORDER 6 CACHE STRING "Maximum ngram order for KenLM")
 
