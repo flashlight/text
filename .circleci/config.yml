@@ -232,20 +232,23 @@ commands:
 jobs:
   ubuntu_20_gcc_9:
     parameters:
+      resource_class:
+        type: string
       use_kenlm:
         type: string
         default: "ON"
       build_shared_libs:
         type: string
-        default: "OFF"
+        default: "ON"
       build_standalone:
         type: string
         default: "ON"
       run_codecov:
         type: string
-        default: ""
-    docker:
-      - image: cimg/base:2021.04
+        default: "OFF"
+    machine:
+      image: ubuntu-2004:202101-01
+    resource_class: << parameters.resource_class >>
     steps:
       - checkout
       - install_ubuntu_build_dependencies:
@@ -275,11 +278,14 @@ jobs:
 
   ubuntu_20_gcc_9_python:
     parameters:
+      resource_class:
+        type: string
       use_kenlm:
         type: string
         default: "ON"
-    docker:
-      - image: cimg/base:2021.04
+    machine:
+      image: ubuntu-2004:202101-01
+    resource_class: << parameters.resource_class >>
     steps:
       - checkout
       - install_ubuntu_build_dependencies:
@@ -300,7 +306,7 @@ jobs:
         default: "ON"
       build_shared_libs:
         type: string
-        default: "OFF"
+        default: "ON"
       build_standalone:
         type: string
         default: "ON"
@@ -354,6 +360,7 @@ jobs:
     executor:
       name: win/default
       shell: bash.exe
+      size: 2xlarge
     steps:
       - checkout
       - install_msvc_build_dependencies
@@ -383,31 +390,31 @@ workflows:
   build-test:
     jobs:
       - ubuntu_20_gcc_9:
-          name: "Ubuntu 20.04 gcc-9 static"
-          use_kenlm: "OFF"
-      - ubuntu_20_gcc_9:
-          name: "Ubuntu 20.04 gcc-9 shared"
-          use_kenlm: "OFF"
           build_shared_libs: "ON"
+          name: "Ubuntu 20.04 (<< matrix.resource_class >>) gcc-9 kenlm=<< matrix.use_kenlm >> standalone=<< matrix.build_standalone >>"
+          matrix:
+            parameters:
+              resource_class: [xlarge, arm.xlarge] # x64, arm64
+              use_kenlm: ["ON", "OFF"]
+              build_standalone: ["ON", "OFF"]
       - ubuntu_20_gcc_9:
-          name: "Ubuntu 20.04 gcc-9 static + KenLM"
+          name: "Ubuntu 20.04 (xlarge) gcc-9 static + KenLM"
+          build_shared_libs: "OFF"
+          resource_class: xlarge
           use_kenlm: "ON"
+          build_standalone: "ON"
       - ubuntu_20_gcc_9:
-          name: "Ubuntu 20.04 gcc-9 shared + KenLM"
+          name: "Compute Code Coverage and Upload to Codecov"
+          resource_class: xlarge
           use_kenlm: "ON"
           build_shared_libs: "ON"
           run_codecov: "ON"
       - ubuntu_20_gcc_9_python:
-          name: "Ubuntu 20.04 gcc-9 Python"
-          use_kenlm: "OFF"
-      - ubuntu_20_gcc_9_python:
-          name: "Ubuntu 20.04 gcc-9 Python + KenLM"
-          use_kenlm: "ON"
-      - ubuntu_20_gcc_9:
-          name: "Ubuntu 20.04 gcc-9 no-standalone - shared + KenLM"
-          use_kenlm: "ON"
-          build_shared_libs: "ON"
-          build_standalone: "OFF"
+          matrix:
+            parameters:
+              resource_class: [xlarge, arm.xlarge]
+              use_kenlm: ["ON", "OFF"]
+          name: "Ubuntu 20.04 (<< matrix.resource_class >>) gcc-9 Python kenlm=<< matrix.use_kenlm >>"
       - macos_clang:
           matrix:
             parameters:
