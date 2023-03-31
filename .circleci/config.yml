@@ -225,6 +225,7 @@ commands:
           command: |
             echo "$(python bindings/python/compute_version.py)" > BUILD_VERSION.txt
             echo "Building version $(cat BUILD_VERSION.txt)"
+            echo "export BUILD_VERSION=$(cat BUILD_VERSION.txt)" >> $BASH_ENV
       - run:
           name: Build wheels
           command: |
@@ -234,6 +235,7 @@ commands:
             CIBW_BEFORE_BUILD: pip install -v git+https://github.com/kpu/kenlm.git && pip install cmake
             CIBW_PRERELEASE_PYTHONS: 0
             CIBW_BUILD_VERBOSITY: 1
+            CIBW_BUILD: cp*
   run_codecov:
     steps:
       - run:
