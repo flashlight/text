@@ -398,7 +398,7 @@ workflows:
               use_kenlm: ["ON", "OFF"]
               build_standalone: ["ON", "OFF"]
       - ubuntu_20_gcc_9:
-          name: "Ubuntu 20.04 (xlarge) gcc-9 static + KenLM"  
+          name: "Ubuntu 20.04 (xlarge) gcc-9 static + KenLM"
           build_shared_libs: "OFF"
           resource_class: xlarge
           use_kenlm: "ON"
