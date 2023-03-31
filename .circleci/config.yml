@@ -360,6 +360,7 @@ jobs:
     executor:
       name: win/default
       shell: bash.exe
+      size: xlarge
     steps:
       - checkout
       - install_msvc_build_dependencies
