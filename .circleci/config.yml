@@ -417,10 +417,6 @@ jobs:
           path: wheelhouse/
 
   upload_wheels:
-    filter:
-      branches:
-        only:
-          - main
     <<: *linux_env
     resource_class: xlarge
     steps:
@@ -484,3 +480,8 @@ workflows:
           name: "Build Python Wheels / Build wheels on ubuntu-20.04 arm64"
       - macos_arm64_wheels:
           name: "Build Python Wheels / Build wheels on macOS-14 arm64"
+      # - upload_wheels:
+      #     filters:
+      #       branches:
+      #         only:
+      #           - main
