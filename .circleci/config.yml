@@ -218,6 +218,17 @@ commands:
             cd test_project && mkdir -p build
             cmake -S . -B build -DBUILD_SHARED_LIBS=<< parameters.build_shared_libs >> && \
             cmake --build build --parallel && ./build/main
+  cibw_build_wheels:
+    steps:
+      - run:
+          name: Build wheels
+          command: |
+            python3 -m pip install --user cibuildwheel==2.12.1
+            python3 -m cibuildwheel --output-dir wheelhouse
+          environment:
+            CIBW_BEFORE_BUILD: pip install -v git+https://github.com/kpu/kenlm.git
+            CIBW_PRERELEASE_PYTHONS: 0
+            CIBW_BUILD_VERBOSITY: 1
   run_codecov:
     steps:
       - run:
@@ -394,11 +405,7 @@ jobs:
     resource_class: arm.xlarge
     steps:
       - checkout
-      - run:
-          name: Build Linux arm64 wheels
-          command: |
-            python3 -m pip install --user cibuildwheel==2.12.1
-            python3 -m cibuildwheel --output-dir wheelhouse
+      - cibw_build_wheels
       - store_artifacts:
           path: wheelhouse/
 
@@ -408,11 +415,7 @@ jobs:
     resource_class: macos.m1.large.gen1
     steps:
       - checkout
-      - run:
-          name: Build macOS wheels
-          command: |
-            pip3 install cibuildwheel==2.12.1
-            cibuildwheel --output-dir wheelhouse
+      - cibw_build_wheels
       - store_artifacts:
           path: wheelhouse/
 
@@ -477,9 +480,9 @@ workflows:
           name: "Windows VS 17 2022 | MSVC 19.33 Python + KenLM"
           use_kenlm: "ON"
       - linux_arm64_wheels:
-          name: "Build Python Wheels / Build wheels on ubuntu-20.04 arm64"
+          name: "Build Python Wheels | Build wheels on ubuntu-20.04 arm64"
       - macos_arm64_wheels:
-          name: "Build Python Wheels / Build wheels on macOS-14 arm64"
+          name: "Build Python Wheels | Build wheels on macOS-14 arm64"
       # - upload_wheels:
       #     filters:
       #       branches:
