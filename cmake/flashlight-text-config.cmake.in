@@ -7,7 +7,6 @@
 # `IMPORTED` targets:
 #
 # ``flashlight::flashlight-text``
-# ``flashlight::flashlight-text-kenlm`` if installed with KenLM
 #   The flashlight-text library.
 #
 # The above targets can be linked with your build using ``target_link_library``.
@@ -23,16 +22,16 @@
 # Dependencies
 include(CMakeFindDependencyMacro)
 find_dependency(Threads)
-if (@FL_TEXT_USE_KENLM@)
-  if (@_FL_TEXT_FIND_KENLM_USED_MODULE@)
-    # Findkenlm.cmake was required to locate KenLM at build time
-    list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}) # Findkenlm.cmake
+# If not building standalone, don't try to find upstream deps,
+# as many of these find modules won't exist
+if (@FL_TEXT_BUILD_STANDALONE@)
+  list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
+  if (@FL_TEXT_USE_KENLM@)
     find_dependency(kenlm)
-    list(REMOVE_AT CMAKE_MODULE_PATH -1) # remove from module path
-  else()
-    find_dependency(kenlm) # use config
-  endif() # _FL_TEXT_FIND_KENLM_USED_MODULE
-endif() # FL_TEXT_USE_KENLM
+  endif()
+  # Remove this dir from module path
+  list(REMOVE_AT CMAKE_MODULE_PATH -1)
+endif() # FL_TEXT_BUILD_STANDALONE
 
 ################################################################################
 
