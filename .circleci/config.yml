@@ -8,7 +8,7 @@ macos_env: &macos_env
 
 linux_env: &linux_env
   machine:
-    image: ubuntu-2004:202204-01
+    image: ubuntu-2004:202201-02
 
 orbs:
   win: circleci/windows@5.0.0
@@ -415,6 +415,20 @@ jobs:
             cibuildwheel --output-dir wheelhouse
       - store_artifacts:
           path: wheelhouse/
+
+  upload_wheels:
+    filter:
+      branches:
+        only:
+          - main
+    <<: *linux_env
+    resource_class: xlarge
+    steps:
+      - run:
+          name: Upload wheels to PyPI
+          command: |
+            python3 -m pip install --user twine
+            python3 -m twine upload --skip-existing wheelhouse/*.whl
 
 workflows:
   build-test:
