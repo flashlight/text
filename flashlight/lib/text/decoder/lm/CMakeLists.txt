@@ -24,7 +24,7 @@ if (FL_TEXT_USE_KENLM)
           "Install KenLM or set the KENLM_ROOT environment variable.")
       endif()
     else()
-      set(_FL_TEXT_FIND_KENLM_USED_MODULE ON)
+      set(_FL_TEXT_FIND_KENLM_USED_MODULE ON) # for flashlight-text-config.cmake
       # [KenLM was found via Findkenlm.cmake]
       # Install the module so downstream projects can find the lib
       # assuming it wasn't found with an exported target config
