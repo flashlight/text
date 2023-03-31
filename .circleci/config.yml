@@ -239,7 +239,7 @@ jobs:
         default: "ON"
       build_shared_libs:
         type: string
-        default: "OFF"
+        default: "ON"
       build_standalone:
         type: string
         default: "ON"
@@ -247,7 +247,7 @@ jobs:
         type: string
         default: "OFF"
     machine:
-      image: ubuntu-2204:2023.02.1
+      image: ubuntu-2004:202101-01
     resource_class: << parameters.resource_class >>
     steps:
       - checkout
@@ -284,7 +284,7 @@ jobs:
         type: string
         default: "ON"
     machine:
-      image: ubuntu-2204:2023.02.1
+      image: ubuntu-2004:202101-01
     resource_class: << parameters.resource_class >>
     steps:
       - checkout
@@ -306,7 +306,7 @@ jobs:
         default: "ON"
       build_shared_libs:
         type: string
-        default: "OFF"
+        default: "ON"
       build_standalone:
         type: string
         default: "ON"
@@ -389,13 +389,19 @@ workflows:
   build-test:
     jobs:
       - ubuntu_20_gcc_9:
+          build_shared_libs: "ON"
+          name: "Ubuntu 20.04 (<< matrix.resource_class >>) gcc-9 kenlm=<< matrix.use_kenlm >> standalone=<< matrix.build_standalone >>"
           matrix:
             parameters:
               resource_class: [xlarge, arm.xlarge] # x64, arm64
               use_kenlm: ["ON", "OFF"]
-              build_shared_libs: ["ON", "OFF"]
               build_standalone: ["ON", "OFF"]
-          name: "Ubuntu 22.04 (<< matrix.resource_class >>) gcc-9 kenlm=<< matrix.use_kenlm >> shared_libs=<< matrix.build_shared_libs >> standalone=<< matrix.build_standalone >>"
+      - ubuntu_20_gcc_9:
+          name: "Ubuntu 20.04 (xlarge) gcc-9 static + KenLM"  
+          build_shared_libs: "OFF"
+          resource_class: xlarge
+          use_kenlm: "ON"
+          build_standalone: "ON"
       - ubuntu_20_gcc_9:
           name: "Compute Code Coverage and Upload to Codecov"
           resource_class: xlarge
@@ -407,7 +413,7 @@ workflows:
             parameters:
               resource_class: [xlarge, arm.xlarge]
               use_kenlm: ["ON", "OFF"]
-          name: "Ubuntu 22.04 (<< matrix.resource_class >>) gcc-9 Python kenlm=<< matrix.use_kenlm >>"
+          name: "Ubuntu 20.04 (<< matrix.resource_class >>) gcc-9 Python kenlm=<< matrix.use_kenlm >>"
       - macos_clang:
           matrix:
             parameters:
