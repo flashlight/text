@@ -228,7 +228,7 @@ commands:
       - run:
           name: Build wheels
           command: |
-            python -m pip install --user cibuildwheel==2.12.1
+            python -m pip install cibuildwheel==2.12.1
             python -m cibuildwheel --output-dir wheelhouse
           environment:
             CIBW_BEFORE_BUILD: pip install -v git+https://github.com/kpu/kenlm.git && pip install cmake
@@ -444,7 +444,7 @@ jobs:
       - run:
           name: Upload wheels to PyPI
           command: |
-            python -m pip install --user twine
+            python -m pip install twine
             python -m twine upload --skip-existing wheelhouse/*.whl
 
 workflows:
