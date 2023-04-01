@@ -223,6 +223,7 @@ commands:
       - run:
           name: Compute wheel version
           command: |
+            pip install packaging
             echo "$(python bindings/python/compute_version.py)" > BUILD_VERSION.txt
             echo "Building version $(cat BUILD_VERSION.txt)"
       - run:
