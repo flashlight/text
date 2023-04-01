@@ -225,17 +225,15 @@ commands:
           command: |
             echo "$(python bindings/python/compute_version.py)" > BUILD_VERSION.txt
             echo "Building version $(cat BUILD_VERSION.txt)"
-            echo "export BUILD_VERSION=$(cat BUILD_VERSION.txt)" >> $BASH_ENV
       - run:
           name: Build wheels
           command: |
-            python3 -m pip install --user cibuildwheel==2.12.1
-            python3 -m cibuildwheel --output-dir wheelhouse
+            python -m pip install --user cibuildwheel==2.12.1
+            python -m cibuildwheel --output-dir wheelhouse
           environment:
             CIBW_BEFORE_BUILD: pip install -v git+https://github.com/kpu/kenlm.git && pip install cmake
             CIBW_PRERELEASE_PYTHONS: 0
             CIBW_BUILD_VERBOSITY: 1
-            CIBW_BUILD: cp*
   run_codecov:
     steps:
       - run:
@@ -412,6 +410,8 @@ jobs:
     resource_class: arm.2xlarge
     steps:
       - checkout
+      - setup_python_virtualenv:
+          platform: "linux"
       - cibw_build_wheels
       - store_artifacts:
           path: wheelhouse/
@@ -431,6 +431,8 @@ jobs:
             curl -o /tmp/Python38.pkg https://www.python.org/ftp/python/3.8.10/python-3.8.10-macos11.pkg
             sudo installer -pkg /tmp/Python38.pkg -target /
             sh "/Applications/Python 3.8/Install Certificates.command"
+      - setup_python_virtualenv:
+          platform: "macos"
       - cibw_build_wheels
       - store_artifacts:
           path: wheelhouse/
@@ -442,8 +444,8 @@ jobs:
       - run:
           name: Upload wheels to PyPI
           command: |
-            python3 -m pip install --user twine
-            python3 -m twine upload --skip-existing wheelhouse/*.whl
+            python -m pip install --user twine
+            python -m twine upload --skip-existing wheelhouse/*.whl
 
 workflows:
   build-test:
