@@ -462,6 +462,7 @@ jobs:
             mkdir wheelhouse
             cp ~/linux_arm64_wheels/wheelhouse/*.whl wheelhouse/
             cp ~/macos_arm64_wheels/wheelhouse/*.whl wheelhouse/
+            ls wheelhouse/*.whl
       - setup_python_virtualenv:
           platform: "linux"
       - run:
@@ -469,7 +470,7 @@ jobs:
           command: |
             pip install twine
             # TODO: remove testpypi
-            python -m twine upload wheelhouse/*.whl --skip-existing \
+            python -m twine upload wheelhouse/*.whl --skip-existing --verbose \
               --repository testpypi
           environment:
             TWINE_NONINTERACTIVE: "1"
