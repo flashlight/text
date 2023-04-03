@@ -235,6 +235,8 @@ commands:
             CIBW_BEFORE_BUILD: pip install -v git+https://github.com/kpu/kenlm.git && pip install cmake
             CIBW_PRERELEASE_PYTHONS: 0
             CIBW_BUILD_VERBOSITY: 1
+            # TODO: delete me
+            CIBW_BUILD: cp311-*
   run_codecov:
     steps:
       - run:
