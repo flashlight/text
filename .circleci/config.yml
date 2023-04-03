@@ -472,10 +472,8 @@ jobs:
       - run:
           name: Upload wheels to PyPI
           command: |
-            echo "FOO_BAR is ${FOO_BAR}"
             pip install twine
             # TODO: remove testpypi
-            echo $TWINE_USERNAME
             twine upload wheelhouse/*.whl \
               --skip-existing \
               --verbose \
