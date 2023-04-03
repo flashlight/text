@@ -239,7 +239,8 @@ commands:
             CIBW_PRERELEASE_PYTHONS: 0
             CIBW_BUILD_VERBOSITY: 1
             # TODO: delete me
-            CIBW_BUILD: cp311-*
+            # CIBW_BUILD: cp311-*
+            CIBW_BUILD: cp311-manylinux_aarch64 cp311-macosx_arm64
   run_codecov:
     steps:
       - run:
@@ -474,11 +475,13 @@ jobs:
             pip install twine
             # TODO: remove testpypi
             echo $TWINE_USERNAME
-            twine upload wheelhouse/*.whl --skip-existing --verbose \
+            twine upload wheelhouse/*.whl \
+              --skip-existing \
+              --verbose \
+              --non-interactive \
+              --username "__token__" \
+              --password $TWINE_PASSWORD \
               --repository testpypi
-          environment:
-            TWINE_NONINTERACTIVE: 1
-            TWINE_USERNAME: "__token__"
 
 workflows:
   build-test:
