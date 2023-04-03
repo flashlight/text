@@ -472,6 +472,7 @@ jobs:
       - run:
           name: Upload wheels to PyPI
           command: |
+            echo "FOO_BAR is ${FOO_BAR}"
             pip install twine
             # TODO: remove testpypi
             echo $TWINE_USERNAME
@@ -480,7 +481,7 @@ jobs:
               --verbose \
               --non-interactive \
               --username "__token__" \
-              --password $TWINE_PASSWORD \
+              --password "${TWINE_PASSWORD}" \
               --repository testpypi
 
 workflows:
