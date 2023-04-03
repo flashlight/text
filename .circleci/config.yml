@@ -418,6 +418,10 @@ jobs:
       - cibw_build_wheels
       - store_artifacts:
           path: wheelhouse/
+      - persist_to_workspace:
+          root: ~/linux_arm64_wheels
+          paths:
+            - wheelhouse/
 
   macos_arm64_wheels:
     working_directory: ~/macos_arm64_wheels
@@ -439,11 +443,25 @@ jobs:
       - cibw_build_wheels
       - store_artifacts:
           path: wheelhouse/
+      - persist_to_workspace:
+          root: ~/macos_arm64_wheels
+          paths:
+            - wheelhouse/
 
   upload_wheels_pypi:
     <<: *linux_env
     resource_class: xlarge
     steps:
+      - attach_workspace:
+          at: ~/linux_arm64_wheels
+      - attach_workspace:
+          at: ~/macos_arm64_wheels
+      - run:
+          name: Consolidate wheels
+          command: |
+            mkdir wheelhouse
+            cp ~/linux_arm64_wheels/wheelhouse/*.whl wheelhouse/
+            cp ~/macos_arm64_wheels/wheelhouse/*.whl wheelhouse/
       - setup_python_virtualenv:
           platform: "linux"
       - run:
