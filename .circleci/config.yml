@@ -226,6 +226,9 @@ commands:
             pip install packaging
             echo "$(python bindings/python/compute_version.py)" > BUILD_VERSION.txt
             echo "Building version $(cat BUILD_VERSION.txt)"
+            # TODO: delete these below lines
+            echo "0.0.0+1" > BUILD_VERSION.txt
+            echo "Building version $(cat BUILD_VERSION.txt)"
       - run:
           name: Build wheels
           command: |
@@ -470,11 +473,12 @@ jobs:
           command: |
             pip install twine
             # TODO: remove testpypi
+            echo $TWINE_USERNAME
             twine upload wheelhouse/*.whl --skip-existing --verbose \
               --repository testpypi
           environment:
-            TWINE_NONINTERACTIVE: "1"
-            TWINE_USERNAME: __token__
+            TWINE_NONINTERACTIVE: 1
+            TWINE_USERNAME: "__token__"
 
 workflows:
   build-test:
