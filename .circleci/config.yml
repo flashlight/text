@@ -227,7 +227,7 @@ commands:
             echo "$(python bindings/python/compute_version.py)" > BUILD_VERSION.txt
             echo "Building version $(cat BUILD_VERSION.txt)"
             # TODO: delete these below lines
-            echo "0.0.0+1" > BUILD_VERSION.txt
+            echo "0.0.0.dev1" > BUILD_VERSION.txt
             echo "Building version $(cat BUILD_VERSION.txt)"
       - run:
           name: Build wheels
