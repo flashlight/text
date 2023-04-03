@@ -438,15 +438,18 @@ jobs:
       - store_artifacts:
           path: wheelhouse/
 
-  upload_wheels:
+  upload_wheels_pypi:
     <<: *linux_env
     resource_class: xlarge
     steps:
+      - setup_python_virtualenv:
+          platform: "linux"
       - run:
           name: Upload wheels to PyPI
           command: |
-            python -m pip install twine
-            python -m twine upload --skip-existing wheelhouse/*.whl
+            pip install twine
+            # TODO: remove testpypi
+            python -m twine upload --skip-existing wheelhouse/*.whl --repository testpypi
 
 workflows:
   build-test:
@@ -498,12 +501,17 @@ workflows:
       - windows_msvc_python:
           name: "Windows VS 17 2022 | MSVC 19.33 Python + KenLM"
           use_kenlm: "ON"
+  build-wheels:
+    jobs:
       - linux_arm64_wheels:
           name: "Build Python Wheels | Build wheels on ubuntu-20.04 arm64"
       - macos_arm64_wheels:
           name: "Build Python Wheels | Build wheels on macOS-14 arm64"
-      # - upload_wheels:
-      #     filters:
-      #       branches:
-      #         only:
-      #           - main
+      - upload_wheels_pypi:
+          requires:
+            - "Build Python Wheels | Build wheels on ubuntu-20.04 arm64"
+            - "Build Python Wheels | Build wheels on macOS-14 arm64"
+          # filters:
+          #   branches:
+          #     only:
+          #       - main
