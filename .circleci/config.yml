@@ -470,12 +470,11 @@ jobs:
           command: |
             pip install twine
             # TODO: remove testpypi
-            python -m twine upload wheelhouse/*.whl --skip-existing --verbose \
+            twine upload wheelhouse/*.whl --skip-existing --verbose \
               --repository testpypi
           environment:
             TWINE_NONINTERACTIVE: "1"
             TWINE_USERNAME: __token__
-            TWINE_PASSWORD: $PYPI_PASSWORD
 
 workflows:
   build-test:
