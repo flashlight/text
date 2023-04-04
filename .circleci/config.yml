@@ -6,6 +6,10 @@ macos_env: &macos_env
   environment:
     HOMEBREW_NO_AUTO_UPDATE: "1"
 
+linux_env: &linux_env
+  machine:
+    image: ubuntu-2004:202201-02
+
 orbs:
   win: circleci/windows@5.0.0
 
@@ -214,6 +218,23 @@ commands:
             cd test_project && mkdir -p build
             cmake -S . -B build -DBUILD_SHARED_LIBS=<< parameters.build_shared_libs >> && \
             cmake --build build --parallel && ./build/main
+  cibw_build_wheels:
+    steps:
+      - run:
+          name: Compute wheel version
+          command: |
+            pip install packaging
+            echo "$(python bindings/python/compute_version.py)" > BUILD_VERSION.txt
+            echo "Building version $(cat BUILD_VERSION.txt)"
+      - run:
+          name: Build wheels
+          command: |
+            python -m pip install cibuildwheel==2.12.1
+            python -m cibuildwheel --output-dir wheelhouse
+          environment:
+            CIBW_BEFORE_BUILD: pip install -v git+https://github.com/kpu/kenlm.git && pip install cmake
+            CIBW_PRERELEASE_PYTHONS: 0
+            CIBW_BUILD_VERBOSITY: 1
   run_codecov:
     steps:
       - run:
@@ -246,8 +267,7 @@ jobs:
       run_codecov:
         type: string
         default: "OFF"
-    machine:
-      image: ubuntu-2004:202101-01
+    <<: *linux_env
     resource_class: << parameters.resource_class >>
     steps:
       - checkout
@@ -283,8 +303,7 @@ jobs:
       use_kenlm:
         type: string
         default: "ON"
-    machine:
-      image: ubuntu-2004:202101-01
+    <<: *linux_env
     resource_class: << parameters.resource_class >>
     steps:
       - checkout
@@ -386,6 +405,75 @@ jobs:
       - run_python_tests:
           use_kenlm: << parameters.use_kenlm >>
 
+  linux_arm64_wheels:
+    working_directory: ~/linux_arm64_wheels
+    <<: *linux_env
+    resource_class: arm.2xlarge
+    steps:
+      - checkout
+      - setup_python_virtualenv:
+          platform: "linux"
+      - cibw_build_wheels
+      - store_artifacts:
+          path: wheelhouse/
+      - persist_to_workspace:
+          root: ~/linux_arm64_wheels
+          paths:
+            - wheelhouse/
+
+  macos_arm64_wheels:
+    working_directory: ~/macos_arm64_wheels
+    <<: *macos_env
+    resource_class: macos.m1.large.gen1
+    steps:
+      - checkout
+      - run:
+          name: Install Rosetta
+          command: sudo softwareupdate --install-rosetta --agree-to-license
+      - run:
+          name: Install macOS arm64-compatible Python 3.8.10
+          command: |
+            curl -o /tmp/Python38.pkg https://www.python.org/ftp/python/3.8.10/python-3.8.10-macos11.pkg
+            sudo installer -pkg /tmp/Python38.pkg -target /
+            sh "/Applications/Python 3.8/Install Certificates.command"
+      - setup_python_virtualenv:
+          platform: "macos"
+      - cibw_build_wheels
+      - store_artifacts:
+          path: wheelhouse/
+      - persist_to_workspace:
+          root: ~/macos_arm64_wheels
+          paths:
+            - wheelhouse/
+
+  upload_wheels_pypi:
+    <<: *linux_env
+    resource_class: xlarge
+    steps:
+      - attach_workspace:
+          at: ~/linux_arm64_wheels
+      - attach_workspace:
+          at: ~/macos_arm64_wheels
+      - run:
+          name: Consolidate wheels
+          command: |
+            mkdir wheelhouse
+            cp ~/linux_arm64_wheels/wheelhouse/*.whl wheelhouse/
+            cp ~/macos_arm64_wheels/wheelhouse/*.whl wheelhouse/
+            ls wheelhouse/*.whl
+      - setup_python_virtualenv:
+          platform: "linux"
+      - run:
+          name: Upload wheels to PyPI
+          command: |
+            pip install twine
+            twine upload wheelhouse/*.whl \
+              --skip-existing \
+              --verbose \
+              --non-interactive \
+              --username "__token__" \
+              --password "${TWINE_PASSWORD}"
+
 workflows:
   build-test:
     jobs:
@@ -436,3 +524,17 @@ workflows:
       - windows_msvc_python:
           name: "Windows VS 17 2022 | MSVC 19.33 Python + KenLM"
           use_kenlm: "ON"
+  build-wheels:
+    jobs:
+      - linux_arm64_wheels:
+          name: "Build Python Wheels | Build wheels on ubuntu-20.04 arm64"
+      - macos_arm64_wheels:
+          name: "Build Python Wheels | Build wheels on macOS-14 arm64"
+      - upload_wheels_pypi:
+          requires:
+            - "Build Python Wheels | Build wheels on ubuntu-20.04 arm64"
+            - "Build Python Wheels | Build wheels on macOS-14 arm64"
+          filters:
+            branches:
+              only:
+                - main
