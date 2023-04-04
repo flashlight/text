@@ -226,9 +226,6 @@ commands:
             pip install packaging
             echo "$(python bindings/python/compute_version.py)" > BUILD_VERSION.txt
             echo "Building version $(cat BUILD_VERSION.txt)"
-            # TODO: delete these below lines
-            echo "0.0.0.dev1" > BUILD_VERSION.txt
-            echo "Building version $(cat BUILD_VERSION.txt)"
       - run:
           name: Build wheels
           command: |
@@ -238,8 +235,6 @@ commands:
             CIBW_BEFORE_BUILD: pip install -v git+https://github.com/kpu/kenlm.git && pip install cmake
             CIBW_PRERELEASE_PYTHONS: 0
             CIBW_BUILD_VERBOSITY: 1
-            # TODO: delete me
-            CIBW_BUILD: cp311-manylinux_aarch64 cp311-macosx_arm64
   run_codecov:
     steps:
       - run:
@@ -472,14 +467,12 @@ jobs:
           name: Upload wheels to PyPI
           command: |
             pip install twine
-            # TODO: remove testpypi
             twine upload wheelhouse/*.whl \
               --skip-existing \
               --verbose \
               --non-interactive \
               --username "__token__" \
-              --password "${TWINE_PASSWORD}" \
-              --repository testpypi
+              --password "${TWINE_PASSWORD}"
 
 workflows:
   build-test:
@@ -541,7 +534,7 @@ workflows:
           requires:
             - "Build Python Wheels | Build wheels on ubuntu-20.04 arm64"
             - "Build Python Wheels | Build wheels on macOS-14 arm64"
-          # filters:
-          #   branches:
-          #     only:
-          #       - main
+          filters:
+            branches:
+              only:
+                - main
