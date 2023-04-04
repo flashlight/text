@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(flashlight-text LANGUAGES CXX C VERSION 0.0.3)
+project(flashlight-text LANGUAGES CXX C VERSION 0.0.4)
 
 include(CTest)
 
