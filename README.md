@@ -21,7 +21,7 @@ pip install flashlight-text
 ```
 To enable optional KenLM support in Python with the decoder, KenLM must be installed via pip:
 ```bash
-pip install git+https://github.com.kpu/kenlm.git
+pip install git+https://github.com/kpu/kenlm.git
 ```
 
 See the [full Python binding documentation](bindings/python) for examples and more.
