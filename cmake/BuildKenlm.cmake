@@ -4,7 +4,7 @@ include(FetchContent)
 
 # TODO: swap to main repo once https://github.com/kpu/kenlm/pull/418 is merged
 set(kenlm_URL https://github.com/jacobkahn/kenlm.git)
-set(kenlm_TAG 9c05ca013a793826ba0ff1945ae6b9f16ca859a5)
+set(kenlm_TAG 5bf7b46558e1c5595bf3b8c9b0b1f9d8d257040a)
 
 FetchContent_Declare(
     kenlm
