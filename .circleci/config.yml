@@ -506,7 +506,7 @@ workflows:
       - macos_clang:
           matrix:
             parameters:
-              resource_class: [macos.x86.medium.gen2, macos.m1.large.gen1]
+              resource_class: [macos.x86.medium.gen2, macos.m1.medium.gen1]
           name: "macOS (<< matrix.resource_class >>) Clang 13 no-standalone - shared + KenLM"
           use_kenlm: "ON"
           build_shared_libs: "ON"
@@ -514,7 +514,7 @@ workflows:
       - macos_clang_python:
           matrix:
             parameters:
-              resource_class: [macos.x86.medium.gen2, macos.m1.large.gen1]
+              resource_class: [macos.x86.medium.gen2, macos.m1.medium.gen1]
           name: "macOS (<< matrix.resource_class >>) Clang 13 Python + KenLM"
           use_kenlm: "ON"
       - windows_msvc:
