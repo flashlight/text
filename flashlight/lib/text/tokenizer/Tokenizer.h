@@ -11,6 +11,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "flashlight/lib/text/Defines.h"
+
 namespace fl {
 namespace lib {
 namespace text {
@@ -49,7 +51,7 @@ using TokenCountPair = std::pair<std::string, size_t>;
  * - Support different word separator.
  * - Support multilingal/unicode use cases.
  */
-class Tokenizer {
+class FL_TEXT_API Tokenizer {
  public:
   Tokenizer() {}
 

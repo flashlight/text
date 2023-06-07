@@ -7,9 +7,6 @@
 
 namespace fl {
 namespace lib {
-namespace text {
-
-// Place holder
-} // namespace text
+namespace text {} // namespace text
 } // namespace lib
 } // namespace fl

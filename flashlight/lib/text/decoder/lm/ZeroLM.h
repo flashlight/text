@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include "flashlight/lib/text/Defines.h"
 #include "flashlight/lib/text/decoder/lm/LM.h"
 
 namespace fl {
@@ -17,7 +18,7 @@ namespace text {
  * ZeroLM is a dummy language model class, which mimics the behavious of a
  * uni-gram language model but always returns 0 as score.
  */
-class ZeroLM : public LM {
+class FL_TEXT_API ZeroLM : public LM {
  public:
   LMStatePtr start(bool startWithNothing) override;
 

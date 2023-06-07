@@ -11,12 +11,12 @@
 
 #ifdef USE_KENLM_FROM_LANGTECH
 #include "language_technology/jedi/lm/model.hh"
-#else
+#else // USE_KENLM_FROM_LANGTECH
 #if __has_include(<kenlm/lm/model.hh>)
 #include <kenlm/lm/model.hh>
 #elif __has_include(<lm/model.hh>)
 #include <lm/model.hh>
-#else
+#else // __has_include
 #error "KenLM header not found (kenlm/lm/model.hh)."
 #endif // __has_include
 #endif // USE_KENLM_FROM_LANGTECH
@@ -26,6 +26,8 @@ namespace lib {
 namespace text {
 
 KenLMState::KenLMState() : ken_(std::make_unique<lm::ngram::State>()) {}
+
+KenLMState::~KenLMState() {}
 
 KenLM::KenLM(const std::string& path, const Dictionary& usrTknDict) {
   // Load LM
@@ -79,6 +81,7 @@ std::pair<LMStatePtr, float> KenLM::finish(const LMStatePtr& state) {
       model_->BaseScore(inState->ken(), vocab_->EndSentence(), outState->ken());
   return std::make_pair(std::move(outState), score);
 }
+
 } // namespace text
 } // namespace lib
 } // namespace fl

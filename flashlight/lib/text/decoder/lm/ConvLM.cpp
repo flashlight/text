@@ -234,6 +234,7 @@ void ConvLM::updateCache(std::vector<LMStatePtr> states) {
     }
   }
 }
+
 } // namespace text
 } // namespace lib
 } // namespace fl

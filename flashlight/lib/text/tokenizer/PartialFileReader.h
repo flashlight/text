@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+#include "flashlight/lib/text/Defines.h"
+
 namespace fl {
 namespace lib {
 namespace text {
@@ -35,8 +37,7 @@ namespace text {
  *   }
  * }
  */
-
-class PartialFileReader {
+class FL_TEXT_API PartialFileReader {
  public:
   PartialFileReader(int rank, int totalReaders);
 

@@ -12,12 +12,15 @@
 #include <unordered_map>
 #include <vector>
 
+#include "flashlight/lib/text/Defines.h"
+
 namespace fl {
 namespace lib {
 namespace text {
+
 // A simple dictionary class which holds a bidirectional map
 // entry (strings) <--> integer indices. Not thread-safe !
-class Dictionary {
+class FL_TEXT_API Dictionary {
  public:
   // Creates an empty dictionary
   Dictionary() {}

@@ -72,6 +72,7 @@ class Decoder {
   /* Get all the final hypothesis */
   virtual std::vector<DecodeResult> getAllFinalHypothesis() const = 0;
 };
+
 } // namespace text
 } // namespace lib
 } // namespace fl

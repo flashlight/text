@@ -56,6 +56,7 @@ target_compile_definitions(
   flashlight-text
   PUBLIC
   FL_TEXT_USE_KENLM=$<BOOL:${FL_TEXT_USE_KENLM}>
+  FL_TEXT_DLL
 )
 
 
