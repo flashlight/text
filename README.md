@@ -26,7 +26,7 @@ pip install git+https://github.com/kpu/kenlm.git
 See the [full Python binding documentation](bindings/python) for examples and more.
 
 ## Building and Installing
-[**From Source (C++)**](#building-from-source) | [**From Source (Python)**](bindings/python#build-instructions) | [**Adding to Your Own Project (C++)**](#adding-flashlight-text-to-a-c-project)
+[**From Source (C++)**](#building-from-source) | [**With `vcpkg` (C++)**](#with-vcpkg) | [**From Source (Python)**](bindings/python#build-instructions) | [**Adding to Your Own Project (C++)**](#adding-flashlight-text-to-a-c-project)
 
 ### Requirements
 At minimum, C++ compilation requires:
