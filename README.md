@@ -5,7 +5,7 @@
 | [**Python Documentation**](bindings/python)
 | [**Citing**](#citing)
 
-[![CircleCI](https://circleci.com/gh/flashlight/text.svg?style=shield)](https://app.circleci.com/pipelines/github/flashlight/text) [![Join the chat at https://gitter.im/flashlight-ml/community](https://img.shields.io/gitter/room/flashlight-ml/community)](https://gitter.im/flashlight-ml/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![PyPI](https://img.shields.io/pypi/v/flashlight-text?color=dark%20green)](https://pypi.org/project/flashlight-text/) [![PyPI - Format](https://img.shields.io/pypi/format/flashlight-text)](https://pypi.org/project/flashlight-text/#files) [![codecov](https://codecov.io/gh/flashlight/text/branch/main/graph/badge.svg?token=rBp4AilMc0)](https://codecov.io/gh/flashlight/text) [![GitHub](https://img.shields.io/github/license/flashlight/text?color=light%20green)](https://github.com/flashlight/text/blob/main/LICENSE)
+[![CircleCI](https://circleci.com/gh/flashlight/text.svg?style=shield)](https://app.circleci.com/pipelines/github/flashlight/text) [![Join the chat at https://gitter.im/flashlight-ml/community](https://img.shields.io/gitter/room/flashlight-ml/community)](https://gitter.im/flashlight-ml/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![PyPI](https://img.shields.io/pypi/v/flashlight-text?color=dark%20green)](https://pypi.org/project/flashlight-text/) [![PyPI - Format](https://img.shields.io/pypi/format/flashlight-text)](https://pypi.org/project/flashlight-text/#files) [![vcpkg](https://img.shields.io/vcpkg/v/flashlight-text)](https://vcpkg.link/ports/flashlight-text) [![Codecov](https://img.shields.io/codecov/c/github/flashlight/text)](https://codecov.io/gh/flashlight/text) [![GitHub](https://img.shields.io/github/license/flashlight/text?color=light%20green)](https://github.com/flashlight/text/blob/main/LICENSE)
 
 *Flashlight Text* is a fast, minimal library for text-based operations. It features:
 - a high-performance, unopinionated [beam search decoder](flashlight/lib/text/decoder)
@@ -44,16 +44,23 @@ Instructions for building/installing the Python bindings from source [can be fou
 
 Building the C++ project from source is simple:
 ```bash
-git clone https://github.com/flashlight/text && cd flashlight
-mkdir build && cd build
-cmake ..
-make -j$(nproc)
-make test    # run tests
-make install # install at the CMAKE_INSTALL_PREFIX
+git clone https://github.com/flashlight/text && cd text
+cmake -S . -B build
+cmake --build build --parallel
+cd build && ctest && cd .. # run tests
+cmake --install build # install at the CMAKE_INSTALL_PREFIX
 ```
 To disable KenLM while building, pass `-DFL_TEXT_USE_KENLM=OFF` to CMake. To disable building tests, pass `-DFL_TEXT_BUILD_TESTS=OFF`.
 
 KenLM can be downloaded and installed automatically if not found on the local system. The `FL_TEXT_BUILD_STANDALONE` option controls this behavior — if disabled, dependencies won't be downloaded and built when building.
+
+#### With [`vcpkg`](https://vcpkg.io/)
+
+Flashlight Text can also be installed and used downstream with the [`vcpkg`](https://vcpkg.io/) package manager. The [port](https://github.com/microsoft/vcpkg/blob/master/ports/flashlight-text/) contains an optional feature with which to build and install with KenLM support:
+```bash
+vcpkg install flashlight-text # no dependencies, or:
+vcpkg install "flashlight-text[kenlm]" # install with KenLM
+```
 
 ### Adding Flashlight Text to a C++ Project
 
@@ -84,8 +91,18 @@ find_package(flashlight-text CONFIG REQUIRED)
 target_link_libraries(myProject PRIVATE flashlight::flashlight-text)
 ```
 
+To link against the library providing KenLM support, use the `flashlight::flashlight-text-kenlm` imported target:
+```cmake
+target_link_libraries(myProject
+  PRIVATE
+  flashlight::flashlight-text
+  # transitively links KenLM
+  flashlight::flashlight-text-kenlm
+)
+```
+
 ### Contributing and Contact
-Contact: jacobkahn@fb.com
+Contact: jacobkahn@meta.com
 
 Flashlight Text is actively developed. See
 [CONTRIBUTING](CONTRIBUTING.md) for more on how to help out.
