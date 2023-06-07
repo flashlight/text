@@ -11,6 +11,7 @@
 #include <optional>
 #include <unordered_map>
 
+#include "flashlight/lib/text/Defines.h"
 #include "flashlight/lib/text/decoder/Decoder.h"
 #include "flashlight/lib/text/decoder/Utils.h"
 #include "flashlight/lib/text/decoder/lm/LM.h"
@@ -93,7 +94,7 @@ struct LexiconFreeSeq2SeqDecoderState {
  * TODO: Doesn't support online decoding now.
  *
  */
-class LexiconFreeSeq2SeqDecoder : public Decoder {
+class FL_TEXT_API LexiconFreeSeq2SeqDecoder : public Decoder {
  public:
   LexiconFreeSeq2SeqDecoder(
       LexiconFreeSeq2SeqDecoderOptions opt,
@@ -136,6 +137,7 @@ class LexiconFreeSeq2SeqDecoder : public Decoder {
 
   std::unordered_map<int, std::vector<LexiconFreeSeq2SeqDecoderState>> hyp_;
 };
+
 } // namespace text
 } // namespace lib
 } // namespace fl

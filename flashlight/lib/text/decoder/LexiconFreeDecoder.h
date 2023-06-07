@@ -9,6 +9,7 @@
 
 #include <unordered_map>
 
+#include "flashlight/lib/text/Defines.h"
 #include "flashlight/lib/text/decoder/Decoder.h"
 #include "flashlight/lib/text/decoder/lm/LM.h"
 
@@ -96,7 +97,7 @@ struct LexiconFreeDecoderState {
  * score of the transcription W. We are allowed to generate words from all the
  * possible combination of tokens.
  */
-class LexiconFreeDecoder : public Decoder {
+class FL_TEXT_API LexiconFreeDecoder : public Decoder {
  public:
   LexiconFreeDecoder(
       LexiconFreeDecoderOptions opt,
@@ -165,6 +166,7 @@ class LexiconFreeDecoder : public Decoder {
   int nDecodedFrames_; // Total number of decoded frames.
   int nPrunedFrames_; // Total number of pruned frames from hyp_.
 };
+
 } // namespace text
 } // namespace lib
 } // namespace fl

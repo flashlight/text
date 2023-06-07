@@ -9,6 +9,7 @@
 
 #include <unordered_map>
 
+#include "flashlight/lib/text/Defines.h"
 #include "flashlight/lib/text/decoder/Decoder.h"
 #include "flashlight/lib/text/decoder/Trie.h"
 #include "flashlight/lib/text/decoder/lm/LM.h"
@@ -111,7 +112,7 @@ struct LexiconDecoderState {
  * search space and all candidate words are generated from it if unkScore is
  * -inf, otherwise <UNK> will be generated for OOVs.
  */
-class LexiconDecoder : public Decoder {
+class FL_TEXT_API LexiconDecoder : public Decoder {
  public:
   LexiconDecoder(
       LexiconDecoderOptions opt,
@@ -182,6 +183,7 @@ class LexiconDecoder : public Decoder {
   int nDecodedFrames_; // Total number of decoded frames.
   int nPrunedFrames_; // Total number of pruned frames from hyp_.
 };
+
 } // namespace text
 } // namespace lib
 } // namespace fl

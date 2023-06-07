@@ -17,6 +17,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "flashlight/lib/text/Defines.h"
+
 namespace fl {
 namespace lib {
 
@@ -32,37 +34,39 @@ using EnableIfSame = typename std::enable_if<std::is_same<S, T>::value>::type;
 // ================================== Functions
 // ==================================
 
-std::string trim(const std::string& str);
+FL_TEXT_API std::string trim(const std::string& str);
 
-void replaceAll(
-    std::string& str,
-    const std::string& from,
-    const std::string& repl);
+FL_TEXT_API void
+replaceAll(std::string& str, const std::string& from, const std::string& repl);
 
-bool startsWith(const std::string& input, const std::string& pattern);
-bool endsWith(const std::string& input, const std::string& pattern);
+FL_TEXT_API bool startsWith(
+    const std::string& input,
+    const std::string& pattern);
+FL_TEXT_API bool endsWith(const std::string& input, const std::string& pattern);
 
-std::vector<std::string>
+FL_TEXT_API std::vector<std::string>
 split(char delim, const std::string& input, bool ignoreEmpty = false);
 
-std::vector<std::string> split(
+FL_TEXT_API std::vector<std::string> split(
     const std::string& delim,
     const std::string& input,
     bool ignoreEmpty = false);
 
-std::vector<std::string> splitOnAnyOf(
+FL_TEXT_API std::vector<std::string> splitOnAnyOf(
     const std::string& delim,
     const std::string& input,
     bool ignoreEmpty = false);
 
-std::vector<std::string> splitOnWhitespace(
+FL_TEXT_API std::vector<std::string> splitOnWhitespace(
     const std::string& input,
     bool ignoreEmpty = false);
 
 /**
  * Join a vector of `std::string` inserting `delim` in between.
  */
-std::string join(const std::string& delim, const std::vector<std::string>& vec);
+FL_TEXT_API std::string join(
+    const std::string& delim,
+    const std::vector<std::string>& vec);
 
 /**
  * Join a range of `std::string` specified by iterators.
@@ -126,5 +130,6 @@ void dedup(std::vector<T>& in) {
   auto it = std::unique(in.begin(), in.end());
   in.resize(std::distance(in.begin(), it));
 }
+
 } // namespace lib
 } // namespace fl

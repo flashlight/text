@@ -9,6 +9,7 @@
 
 #include <functional>
 
+#include "flashlight/lib/text/Defines.h"
 #include "flashlight/lib/text/decoder/lm/LM.h"
 #include "flashlight/lib/text/dictionary/Defines.h"
 #include "flashlight/lib/text/dictionary/Dictionary.h"
@@ -29,7 +30,7 @@ struct ConvLMState : LMState {
       : tokens(std::vector<int>(size)), length(size) {}
 };
 
-class ConvLM : public LM {
+class FL_TEXT_API ConvLM : public LM {
  public:
   ConvLM(
       const GetConvLmScoreFunc& getConvLmScoreFunc,
@@ -68,6 +69,7 @@ class ConvLM : public LM {
       const LMStatePtr& state,
       const int tokenIdx);
 };
+
 } // namespace text
 } // namespace lib
 } // namespace fl

@@ -157,7 +157,6 @@ class CMakeBuild(build_ext):
 
         if platform.system() == "Windows":
             cmake_args += [
-                "-DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=ON",
                 "-DCMAKE_RUNTIME_OUTPUT_DIRECTORY_{}={}".format(cfg.upper(), ext_dir),
                 "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}".format(cfg.upper(), ext_dir),
                 "-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_{}={}".format(cfg.upper(), ext_dir),

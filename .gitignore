@@ -52,3 +52,8 @@ wheels/
 *.exe
 *.out
 *.app
+
+# Dev environment
+.vscode
+.vs
+CMakeSettings.json

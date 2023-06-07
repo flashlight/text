@@ -10,6 +10,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "flashlight/lib/text/Defines.h"
+
 namespace fl {
 namespace lib {
 namespace text {
@@ -59,7 +61,7 @@ using TrieNodePtr = std::shared_ptr<TrieNode>;
  * the search space in deocder and quickly look up scores for a given token
  * (completed word) or make prediction for incompleted ones based on smearing.
  */
-class Trie {
+class FL_TEXT_API Trie {
  public:
   Trie(int maxChildren, int rootIdx)
       : root_(std::make_shared<TrieNode>(rootIdx)), maxChildren_(maxChildren) {}
@@ -90,6 +92,7 @@ class Trie {
 };
 
 using TriePtr = std::shared_ptr<Trie>;
+
 } // namespace text
 } // namespace lib
 } // namespace fl

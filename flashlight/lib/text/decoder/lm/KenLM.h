@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "flashlight/lib/text/Defines.h"
 #include "flashlight/lib/text/decoder/lm/LM.h"
 #include "flashlight/lib/text/dictionary/Dictionary.h"
 
@@ -36,8 +37,9 @@ namespace text {
  * indicies and compare functions
  * https://github.com/kpu/kenlm/blob/master/lm/state.hh.
  */
-struct KenLMState : LMState {
+struct FL_TEXT_API KenLMState : LMState {
   KenLMState();
+  ~KenLMState();
   std::unique_ptr<lm::ngram::State> ken_;
   lm::ngram::State* ken() {
     return ken_.get();
@@ -47,7 +49,7 @@ struct KenLMState : LMState {
 /**
  * KenLM extends LM by using the toolkit https://kheafield.com/code/kenlm/.
  */
-class KenLM : public LM {
+class FL_TEXT_API KenLM : public LM {
  public:
   KenLM(const std::string& path, const Dictionary& usrTknDict);
 
@@ -65,6 +67,7 @@ class KenLM : public LM {
 };
 
 using KenLMPtr = std::shared_ptr<KenLM>;
+
 } // namespace text
 } // namespace lib
 } // namespace fl
