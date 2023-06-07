@@ -424,7 +424,7 @@ jobs:
   macos_arm64_wheels:
     working_directory: ~/macos_arm64_wheels
     <<: *macos_env
-    resource_class: macos.m1.large.gen1
+    resource_class: macos.m1.medium.gen1
     steps:
       - checkout
       - run:
