@@ -254,7 +254,7 @@ class DecoderTestCase(unittest.TestCase):
 
 
 @dataclass
-class Seq2SeqTestModelState(object):
+class Seq2SeqTestModelState:
     """
     A simulation of model state. These are synthetically created for the test
     but store information about model scores for the next timestep (i.e.
