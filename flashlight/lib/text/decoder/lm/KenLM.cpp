@@ -27,7 +27,7 @@ namespace text {
 
 KenLMState::KenLMState() : ken_(std::make_unique<lm::ngram::State>()) {}
 
-KenLMState::~KenLMState() {}
+KenLMState::~KenLMState() = default;
 
 KenLM::KenLM(const std::string& path, const Dictionary& usrTknDict) {
   // Load LM

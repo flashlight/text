@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -105,7 +105,7 @@ TEST(DecoderTest, run) {
   std::cout << "[Decoder] LM constructed." << std::endl;
 
   std::vector<std::string> sentence{"the", "cat", "sat", "on", "the", "mat"};
-  auto inState = lm->start(0);
+  auto inState = lm->start(false);
   float totalScore = 0, lmScore = 0;
   std::vector<float> lmScoreTarget{
       -1.05971, -4.19448, -3.33383, -2.76726, -1.16237, -4.64589};

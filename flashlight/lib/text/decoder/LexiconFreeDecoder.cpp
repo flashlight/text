@@ -5,9 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include <stdlib.h>
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <functional>
 #include <numeric>
 
@@ -22,7 +22,7 @@ void LexiconFreeDecoder::decodeBegin() {
   hyp_.emplace(0, std::vector<LexiconFreeDecoderState>());
 
   /* note: the lm reset itself with :start() */
-  hyp_[0].emplace_back(0.0, lm_->start(0), nullptr, sil_);
+  hyp_[0].emplace_back(0.0, lm_->start(false), nullptr, sil_);
   nDecodedFrames_ = 0;
   nPrunedFrames_ = 0;
 }

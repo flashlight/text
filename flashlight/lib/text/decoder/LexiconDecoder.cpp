@@ -5,9 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include <stdlib.h>
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <functional>
 #include <numeric>
 #include <unordered_map>
@@ -24,7 +24,7 @@ void LexiconDecoder::decodeBegin() {
 
   /* note: the lm reset itself with :start() */
   hyp_[0].emplace_back(
-      0.0, lm_->start(0), lexicon_->getRoot(), nullptr, sil_, -1);
+      0.0, lm_->start(false), lexicon_->getRoot(), nullptr, sil_, -1);
   nDecodedFrames_ = 0;
   nPrunedFrames_ = 0;
 }

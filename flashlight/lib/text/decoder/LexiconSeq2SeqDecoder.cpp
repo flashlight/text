@@ -5,11 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <functional>
 #include <numeric>
 
@@ -30,7 +30,7 @@ void LexiconSeq2SeqDecoder::decodeStep(const float* emissions, int T, int N) {
   // Start from here.
   hyp_[0].clear();
   hyp_[0].emplace_back(
-      0.0, lm_->start(0), lexicon_->getRoot(), nullptr, -1, -1, nullptr);
+      0.0, lm_->start(false), lexicon_->getRoot(), nullptr, -1, -1, nullptr);
 
   // Decode frame by frame
   int t = 0;

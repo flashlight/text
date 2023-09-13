@@ -95,7 +95,7 @@ void Tokenizer::countTokens(
   /* 3. Sort tokens */
   tokenCountPairs_.clear();
   for (const auto& item : tokenCountMap) {
-    tokenCountPairs_.push_back(item);
+    tokenCountPairs_.emplace_back(item);
   }
   std::sort(
       tokenCountPairs_.begin(),

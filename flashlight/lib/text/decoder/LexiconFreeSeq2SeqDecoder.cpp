@@ -5,9 +5,9 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-#include <stdlib.h>
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <functional>
 #include <numeric>
 
@@ -30,7 +30,7 @@ void LexiconFreeSeq2SeqDecoder::decodeStep(
 
   // Start from here.
   hyp_[0].clear();
-  hyp_[0].emplace_back(0.0, lm_->start(0), nullptr, -1, nullptr);
+  hyp_[0].emplace_back(0.0, lm_->start(false), nullptr, -1, nullptr);
 
   // Decode frame by frame
   int t = 0;
