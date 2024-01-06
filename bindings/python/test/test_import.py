@@ -11,7 +11,7 @@ import unittest
 
 
 class ImportTestCase(unittest.TestCase):
-    def test_import_lib_text(self):
+    def test_import_lib_text(self) -> None:
         from flashlight.lib.text import decoder as fl_decoder, dictionary as fl_dict
 
         self.assertIsNotNone(fl_decoder)
