@@ -471,5 +471,9 @@ class DecoderPickleTestCase(unittest.TestCase):
         # serialization of lexicon_decoder is currently unsupported
 
 
-if __name__ == "__main__":
+def main() -> None:
     unittest.main()
+
+
+if __name__ == "__main__":
+    main()  # pragma: no cover
