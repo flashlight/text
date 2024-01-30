@@ -52,7 +52,7 @@ jobs:
         run: echo "BUILD_VERSION=$(python bindings/python/compute_version.py)" >> $GITHUB_ENV
 
       - name: Build sdist
-        run: pipx run build --sdist --no-isolation
+        run: pipx run build --sdist
 
       - uses: actions/upload-artifact@v3
         with:
