@@ -33,8 +33,7 @@ jobs:
       - name: Build wheels
         run: python -m cibuildwheel --archs auto64 --output-dir wheelhouse
         env:
-          # TODO: move back to kpu/kenlm once https://github.com/kpu/kenlm/pull/446 is merged
-          CIBW_BEFORE_BUILD: pip install -v git+https://github.com/jacobkahn/kenlm.git@fix_false_positive_compression_libs
+          CIBW_BEFORE_BUILD: pip install -v git+https://github.com/kpu/kenlm.git
           CIBW_PRERELEASE_PYTHONS: 0
           CIBW_BUILD_VERBOSITY: 1
       - uses: actions/upload-artifact@v3
