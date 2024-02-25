@@ -8,7 +8,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-20.04, windows-2022, macOS-12]
+        # os: [ubuntu-20.04, windows-2022, macOS-12]
+        os: [windows-2022]
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v3
@@ -16,7 +17,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.12'
 
       # Use a venv for macOS runners
       - name: "Create Python virtual environment"
@@ -33,7 +34,8 @@ jobs:
       - name: Build wheels
         run: python -m cibuildwheel --archs auto64 --output-dir wheelhouse
         env:
-          CIBW_BEFORE_BUILD: pip install -v git+https://github.com/kpu/kenlm.git
+          # CIBW_BEFORE_BUILD: pip install -v git+https://github.com/kpu/kenlm.git
+          CIBW_BEFORE_BUILD: pip install -v git+https://github.com/jacobkahn/kenlm.git@fix_false_positive_compression_libs
           CIBW_PRERELEASE_PYTHONS: 0
           CIBW_BUILD_VERBOSITY: 1
       - uses: actions/upload-artifact@v3
