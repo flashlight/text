@@ -8,8 +8,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # os: [ubuntu-20.04, windows-2022, macOS-12]
-        os: [ubuntu-20.04, macOS-12]
+        os: [ubuntu-20.04, windows-2022, macOS-12]
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v3
@@ -28,7 +27,7 @@ jobs:
         if: runner.os == 'macOS'
 
       - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==2.16.4
+        run: python -m pip install cibuildwheel==2.16.5
       - name: Compute version
         run: echo "$(python bindings/python/compute_version.py)" > BUILD_VERSION.txt
       - name: Build wheels
