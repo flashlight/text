@@ -3,3 +3,8 @@ recursive-include cmake *.cmake *.cmake.in
 recursive-include flashlight/lib *.h *.cpp CMakeLists.txt
 recursive-include bindings/python *.cpp CMakeLists.txt
 global-exclude *.o *.so *.dylib *.a .git *.pyc *.swp
+
+include LICENSE
+include bindings/python/version.txt
+include bindings/python/README.md
+include requirements.txt

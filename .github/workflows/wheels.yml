@@ -16,7 +16,7 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.12'
 
       # Use a venv for macOS runners
       - name: "Create Python virtual environment"
@@ -27,7 +27,7 @@ jobs:
         if: runner.os == 'macOS'
 
       - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==2.12.1
+        run: python -m pip install cibuildwheel==2.16.5
       - name: Compute version
         run: echo "$(python bindings/python/compute_version.py)" > BUILD_VERSION.txt
       - name: Build wheels
@@ -52,7 +52,7 @@ jobs:
         run: echo "BUILD_VERSION=$(python bindings/python/compute_version.py)" >> $GITHUB_ENV
 
       - name: Build sdist
-        run: pipx run build --sdist --no-isolation
+        run: pipx run build --sdist
 
       - uses: actions/upload-artifact@v3
         with:
