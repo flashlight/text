@@ -8,7 +8,7 @@ macos_env: &macos_env
 
 linux_env: &linux_env
   machine:
-    image: ubuntu-2204:2023.07.1
+    image: ubuntu-2204:current
 
 orbs:
   win: circleci/windows@5.0.0
@@ -224,7 +224,7 @@ commands:
           name: Compute wheel version
           command: |
             pip install packaging
-            echo "$(python bindings/python/compute_version.py)" > BUILD_VERSION.txt
+            python bindings/python/compute_version.py > BUILD_VERSION.txt
             echo "Building version $(cat BUILD_VERSION.txt)"
       - run:
           name: Build wheels
