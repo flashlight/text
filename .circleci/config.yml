@@ -8,7 +8,7 @@ macos_env: &macos_env
 
 linux_env: &linux_env
   machine:
-    image: ubuntu-2004:202201-02
+    image: ubuntu-2204:2023.07.1
 
 orbs:
   win: circleci/windows@5.0.0
