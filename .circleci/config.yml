@@ -229,7 +229,7 @@ commands:
       - run:
           name: Build wheels
           command: |
-            python -m pip install cibuildwheel==2.12.1
+            python -m pip install cibuildwheel==2.16.5
             python -m cibuildwheel --output-dir wheelhouse
           environment:
             CIBW_BEFORE_BUILD: pip install -v git+https://github.com/kpu/kenlm.git && pip install cmake
