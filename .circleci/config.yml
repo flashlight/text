@@ -23,7 +23,7 @@ commands:
           name: "Install Build Dependencies"
           command: |
             sudo apt -y update && \
-            sudo apt -y install build-essential python3-dev python3-pip python3-venv
+            sudo apt -y install build-essential python3-dev python3-pip python3-venv cmake
       - when:
           condition:
             equal: ["ON", << parameters.use_kenlm >>]
@@ -32,7 +32,7 @@ commands:
                 name: "Install Build Dependencies (KenLM)"
                 # TODO: remove boost once https://github.com/kpu/kenlm/pull/418 is merged
                 command: |
-                  sudo apt -y install cmake libboost-program-options-dev libboost-system-dev libboost-thread-dev \
+                  sudo apt -y install libboost-program-options-dev libboost-system-dev libboost-thread-dev \
                   libboost-test-dev liblzma-dev libbz2-dev zlib1g-dev
   install_macos_build_dependencies:
     parameters:
@@ -41,7 +41,7 @@ commands:
     steps:
       - run:
           name: "Install Build Dependencies"
-          command: brew install googletest
+          command: brew install googletest cmake
       - when:
           condition:
             equal: ["ON", << parameters.use_kenlm >>]
@@ -49,7 +49,7 @@ commands:
             - run:
                 name: "Install Build Dependencies (KenLM)"
                 # TODO: remove boost once https://github.com/kpu/kenlm/pull/418 is merged
-                command: brew install cmake boost zlib bzip2 lzip
+                command: brew install boost zlib bzip2 lzip
   install_msvc_build_dependencies:
     parameters:
       use_kenlm:
@@ -58,18 +58,14 @@ commands:
       - run:
           name: "Install Build Dependencies"
           command: |
-            choco install python3 -y
-      - when:
-          condition:
-            equal: ["ON", << parameters.use_kenlm >>]
-          steps:
-            - run:
-                name: "Install Build Dependencies (KenLM)"
-                command: choco install cmake -y
-            # windows needs a path modification
-            - run:
-                name: "Set PATH to find CMake"
-                command: echo 'export PATH="$PATH:/c/Program Files/CMake/bin"' >> $BASH_ENV
+            choco install python3 cmake -y
+      - run:
+          name: "Install Build Dependencies"
+          command: choco install cmake -y
+      # windows needs a path modification
+      - run:
+          name: "Set PATH to find CMake"
+          command: echo 'export PATH="$PATH:/c/Program Files/CMake/bin"' >> $BASH_ENV
   install_kenlm:
     parameters:
       platform:
@@ -178,7 +174,7 @@ commands:
       - run:
           name: "Install Python Bindings"
           command: |
-            USE_KENLM=<< parameters.use_kenlm >> pip wheel -v .
+            USE_KENLM=<< parameters.use_kenlm >> pip wheel -v . --no-use-pep517
             pip install *.whl
   run_python_tests:
     parameters:
