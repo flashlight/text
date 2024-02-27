@@ -5,7 +5,6 @@ macos_env: &macos_env
     xcode: 14.2.0
   environment:
     HOMEBREW_NO_AUTO_UPDATE: "1"
-    VENV_ROOT: "${HOME}"
 
 linux_env: &linux_env
   machine:
@@ -132,8 +131,8 @@ commands:
             - run:
                 name: "Setup virtualenv"
                 command: |
-                  python3 -m venv ${VENV_ROOT}/venv
-                  echo "source ${VENV_ROOT}/venv/bin/activate" >> $BASH_ENV
+                  python3 -m venv venv
+                  echo "source venv/bin/activate" >> $BASH_ENV
       - when:
           condition:
             equal: ["windows", << parameters.platform >>]
@@ -141,8 +140,8 @@ commands:
             - run:
                 name: "Setup virtualenv"
                 command: |
-                  python -m venv ${VENV_ROOT}/venv
-                  echo "source ${VENV_ROOT}/venv/Scripts/activate" >> $BASH_ENV
+                  python -m venv venv
+                  echo "source venv/Scripts/activate" >> $BASH_ENV
   install_python_bindings:
     parameters:
       use_kenlm:
