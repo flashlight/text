@@ -225,9 +225,6 @@ def main():
             include=["flashlight.lib.text", "flashlight.lib.text.decoder"],
             exclude=["test"],
         ),
-        install_requires=[
-            f"cmake >= {CMAKE_MINIMUM_VERSION[0]}.{CMAKE_MINIMUM_VERSION[1]}"
-        ],
         package_dir={"": PACKAGE_DIR},
         ext_modules=[
             CMakeExtension("flashlight.lib.text.decoder"),

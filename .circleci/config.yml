@@ -23,7 +23,7 @@ commands:
           name: "Install Build Dependencies"
           command: |
             sudo apt -y update && \
-            sudo apt -y install build-essential python3-dev python3-pip python3-venv cmake
+            sudo apt -y install build-essential python3-dev python3-pip python3-venv
       - when:
           condition:
             equal: ["ON", << parameters.use_kenlm >>]
@@ -38,9 +38,10 @@ commands:
     steps:
       - run:
           name: "Install Build Dependencies"
+          # Most of these are KenLM-related
           # TODO: remove boost once https://github.com/kpu/kenlm/pull/418 is merged
           command: |
-            brew install cmake googletest boost zlib bzip2 lzip
+            brew install googletest boost zlib bzip2 lzip
   install_msvc_build_dependencies:
     steps:
       - run:
@@ -148,9 +149,6 @@ commands:
         type: string
         default: "ON"
     steps:
-      - run:
-          name: "Install Python bindings dependencies"
-          command: pip install wheel numpy cmake
       - when:
           condition:
             equal: ["ON", << parameters.use_kenlm >>]
