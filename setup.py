@@ -27,8 +27,9 @@ PACKAGE_DIR = "bindings/python"
 ARTIFACTS_DIR = os.path.join(PACKAGE_DIR, "flashlight/lib/text")
 BUILD_VERSION_PATH = Path(os.path.join(THIS_DIR, "BUILD_VERSION.txt"))
 VERSION_TXT_PATH = Path(os.path.join(THIS_DIR, PACKAGE_DIR, "version.txt"))
-VERSION_PY_PATH = Path(os.path.join(
-    THIS_DIR, PACKAGE_DIR, "flashlight", "lib", "text", "version.py"))
+VERSION_PY_PATH = Path(
+    os.path.join(THIS_DIR, PACKAGE_DIR, "flashlight", "lib", "text", "version.py")
+)
 
 CMAKE_MINIMUM_VERSION = (3, 18)  # 3.18
 
@@ -124,13 +125,11 @@ class CMakeBuild(build_ext):
                 + ", ".join(e.name for e in self.extensions)
             )
 
-        cmake_version = re.search(
-            r"version\s*([\d.]+)", out.decode().lower()).group(1)
+        cmake_version = re.search(r"version\s*([\d.]+)", out.decode().lower()).group(1)
         cmake_version_tuple = tuple([int(v) for v in cmake_version.split(".")])
         if cmake_version_tuple < CMAKE_MINIMUM_VERSION:
             raise RuntimeError(
-                f"CMake >= 3.18 is required to build flashlight-text; found {
-                    cmake_version}"
+                f"CMake >= 3.18 is required to build flashlight-text; found {cmake_version}"
             )
 
         # our CMakeLists builds all the extensions at once
@@ -143,8 +142,7 @@ class CMakeBuild(build_ext):
 
         ext_dir = str(Path(self.get_ext_fullpath(ext.name)).absolute().parent)
         source_dir = str(Path(__file__).absolute().parent)
-        use_kenlm = not check_negative_env_flag(
-            "USE_KENLM")  # on unless disabled
+        use_kenlm = not check_negative_env_flag("USE_KENLM")  # on unless disabled
         kenlm_header_path, kenlm_lib_path = (
             get_kenlm_paths(self.build_temp) if use_kenlm else (None, None)
         )
@@ -165,12 +163,9 @@ class CMakeBuild(build_ext):
 
         if platform.system() == "Windows":
             cmake_args += [
-                "-DCMAKE_RUNTIME_OUTPUT_DIRECTORY_{}={}".format(
-                    cfg.upper(), ext_dir),
-                "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}".format(
-                    cfg.upper(), ext_dir),
-                "-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_{}={}".format(
-                    cfg.upper(), ext_dir),
+                "-DCMAKE_RUNTIME_OUTPUT_DIRECTORY_{}={}".format(cfg.upper(), ext_dir),
+                "-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}".format(cfg.upper(), ext_dir),
+                "-DCMAKE_ARCHIVE_OUTPUT_DIRECTORY_{}={}".format(cfg.upper(), ext_dir),
             ]
             if sys.maxsize > 2**32:
                 cmake_args += ["-A", "x64"]
@@ -230,8 +225,9 @@ def main():
             include=["flashlight.lib.text", "flashlight.lib.text.decoder"],
             exclude=["test"],
         ),
-        install_requires=[f"cmake >= {CMAKE_MINIMUM_VERSION[0]}.{
-            CMAKE_MINIMUM_VERSION[1]}"],
+        install_requires=[
+            f"cmake >= {CMAKE_MINIMUM_VERSION[0]}.{CMAKE_MINIMUM_VERSION[1]}"
+        ],
         package_dir={"": PACKAGE_DIR},
         ext_modules=[
             CMakeExtension("flashlight.lib.text.decoder"),
