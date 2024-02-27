@@ -26,6 +26,9 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 PACKAGE_DIR = "bindings/python"
 ARTIFACTS_DIR = os.path.join(PACKAGE_DIR, "flashlight/lib/text")
 BUILD_VERSION_PATH = Path(os.path.join(THIS_DIR, "BUILD_VERSION.txt"))
+VERSION_TXT_PATH = Path(os.path.join(THIS_DIR, PACKAGE_DIR, "version.txt"))
+VERSION_PY_PATH = Path(os.path.join(
+    THIS_DIR, PACKAGE_DIR, "flashlight", "lib", "text", "version.py"))
 
 CMAKE_MINIMUM_VERSION = (3, 18)  # 3.18
 
@@ -194,11 +197,19 @@ def main():
         version = os.getenv("BUILD_VERSION")
     elif BUILD_VERSION_PATH.is_file():
         version = BUILD_VERSION_PATH.read_text().strip()
-    else:
-        version_txt = os.path.join(THIS_DIR, PACKAGE_DIR, "version.txt")
-        with open(version_txt) as f:
+    elif VERSION_PY_PATH.is_file():
+        # see if version.py is already written (as is the case with a source distribution)
+        from bindings.python.flashlight.lib.text.version import __version__ as version
+    elif VERSION_TXT_PATH.is_file():
+        with open(VERSION_TXT_PATH) as f:
             version = f.readline().strip()
         version += get_local_version_suffix()
+    else:
+        raise RuntimeError(
+            "Could not find version.txt, BUILD_VERSION.txt, or version.py. "
+            "Please run `python bindings/python/compute_version.py` to "
+            "generate the version file."
+        )
 
     write_version_file(version)
 
