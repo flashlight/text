@@ -172,6 +172,10 @@ commands:
                 command: |
                   pip install -v git+https://github.com/kpu/kenlm.git
       - run:
+          name: "Install Python bindings build dependencies"
+          command: |
+            pip install setuptools wheel
+      - run:
           name: "Install Python Bindings"
           # Because of KenLM, use --no-build-isolation
           command: |
