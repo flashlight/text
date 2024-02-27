@@ -5,6 +5,7 @@ macos_env: &macos_env
     xcode: 14.2.0
   environment:
     HOMEBREW_NO_AUTO_UPDATE: "1"
+    VENV_ROOT: "${HOME}"
 
 linux_env: &linux_env
   machine:
@@ -131,8 +132,8 @@ commands:
             - run:
                 name: "Setup virtualenv"
                 command: |
-                  python3 -m venv venv
-                  echo "source venv/bin/activate" >> $BASH_ENV
+                  python3 -m venv ${VENV_ROOT}/venv
+                  echo "source ${VENV_ROOT}/venv/bin/activate" >> $BASH_ENV
       - when:
           condition:
             equal: ["windows", << parameters.platform >>]
@@ -140,8 +141,8 @@ commands:
             - run:
                 name: "Setup virtualenv"
                 command: |
-                  python -m venv venv
-                  echo "source venv/Scripts/activate" >> $BASH_ENV
+                  python -m venv ${VENV_ROOT}/venv
+                  echo "source ${VENV_ROOT}/venv/Scripts/activate" >> $BASH_ENV
   install_python_bindings:
     parameters:
       use_kenlm:
@@ -158,7 +159,7 @@ commands:
             - run:
                 name: "Install KenLM"
                 command: |
-                  pip install git+https://github.com/kpu/kenlm.git
+                  pip install -v git+https://github.com/kpu/kenlm.git
       - run:
           name: "Install Python Bindings"
           command: USE_KENLM=<< parameters.use_kenlm >> pip install -v .
@@ -479,14 +480,14 @@ workflows:
     jobs:
       - ubuntu_20_gcc_9:
           build_shared_libs: "ON"
-          name: "Ubuntu 20.04 (<< matrix.resource_class >>) gcc-9 kenlm=<< matrix.use_kenlm >> standalone=<< matrix.build_standalone >>"
+          name: "Ubuntu 22.04 (<< matrix.resource_class >>) gcc-9 kenlm=<< matrix.use_kenlm >> standalone=<< matrix.build_standalone >>"
           matrix:
             parameters:
               resource_class: [xlarge, arm.xlarge] # x64, arm64
               use_kenlm: ["ON", "OFF"]
               build_standalone: ["ON", "OFF"]
       - ubuntu_20_gcc_9:
-          name: "Ubuntu 20.04 (xlarge) gcc-9 static + KenLM"
+          name: "Ubuntu 22.04 (xlarge) gcc-9 static + KenLM"
           build_shared_libs: "OFF"
           resource_class: xlarge
           use_kenlm: "ON"
@@ -502,7 +503,7 @@ workflows:
             parameters:
               resource_class: [xlarge, arm.xlarge]
               use_kenlm: ["ON", "OFF"]
-          name: "Ubuntu 20.04 (<< matrix.resource_class >>) gcc-9 Python kenlm=<< matrix.use_kenlm >>"
+          name: "Ubuntu 22.04 (<< matrix.resource_class >>) gcc-9 Python kenlm=<< matrix.use_kenlm >>"
       - macos_clang:
           matrix:
             parameters:
@@ -527,12 +528,12 @@ workflows:
   build-wheels:
     jobs:
       - linux_arm64_wheels:
-          name: "Build Python Wheels | Build wheels on ubuntu-20.04 arm64"
+          name: "Build Python Wheels | Build wheels on ubuntu-22.04 arm64"
       - macos_arm64_wheels:
           name: "Build Python Wheels | Build wheels on macOS-14 arm64"
       - upload_wheels_pypi:
           requires:
-            - "Build Python Wheels | Build wheels on ubuntu-20.04 arm64"
+            - "Build Python Wheels | Build wheels on ubuntu-22.04 arm64"
             - "Build Python Wheels | Build wheels on macOS-14 arm64"
           filters:
             branches:
