@@ -32,26 +32,44 @@ commands:
                 name: "Install KenLM Build Dependencies"
                 # TODO: remove boost once https://github.com/kpu/kenlm/pull/418 is merged
                 command: |
-                  sudo apt -y install libboost-program-options-dev libboost-system-dev libboost-thread-dev \
+                  sudo apt -y install cmake libboost-program-options-dev libboost-system-dev libboost-thread-dev \
                   libboost-test-dev liblzma-dev libbz2-dev zlib1g-dev
   install_macos_build_dependencies:
+    parameters:
+      use_kenlm:
+        type: string
     steps:
       - run:
           name: "Install Build Dependencies"
-          # Most of these are KenLM-related
-          # TODO: remove boost once https://github.com/kpu/kenlm/pull/418 is merged
-          command: |
-            brew install googletest boost zlib bzip2 lzip
+          command: brew install googletest
+      - when:
+          condition:
+            equal: ["ON", << parameters.use_kenlm >>]
+          steps:
+            - run:
+                name: "Install KenLM Build Dependencies"
+                # TODO: remove boost once https://github.com/kpu/kenlm/pull/418 is merged
+                command: brew install cmake boost zlib bzip2 lzip
   install_msvc_build_dependencies:
+    parameters:
+      use_kenlm:
+        type: string
     steps:
       - run:
           name: "Install Build Dependencies"
           command: |
-            choco install cmake python3 -y
-      # windows needs a path modification
-      - run:
-          name: "Set PATH to find CMake"
-          command: echo 'export PATH="$PATH:/c/Program Files/CMake/bin"' >> $BASH_ENV
+            choco install python3 -y
+      - when:
+          condition:
+            equal: ["ON", << parameters.use_kenlm >>]
+          steps:
+            - run:
+                name: "Install KenLM Build Dependencies"
+                command: choco install cmake -y
+            # windows needs a path modification
+            - run:
+                name: "Set PATH to find CMake"
+                command: echo 'export PATH="$PATH:/c/Program Files/CMake/bin"' >> $BASH_ENV
   install_kenlm:
     parameters:
       platform:
@@ -331,7 +349,8 @@ jobs:
     shell: /bin/bash -eux -o pipefail
     steps:
       - checkout
-      - install_macos_build_dependencies
+      - install_macos_build_dependencies:
+          use_kenlm: << parameters.use_kenlm >>
       - when:
           condition:
             and:
@@ -358,7 +377,8 @@ jobs:
     shell: /bin/bash -eux -o pipefail
     steps:
       - checkout
-      - install_macos_build_dependencies
+      - install_macos_build_dependencies:
+          use_kenlm: << parameters.use_kenlm >>
       - setup_python_virtualenv:
           platform: "macos"
       - install_python_bindings:
@@ -380,7 +400,8 @@ jobs:
       size: 2xlarge
     steps:
       - checkout
-      - install_msvc_build_dependencies
+      - install_msvc_build_dependencies:
+          use_kenlm: "OFF"
       - build_flashlight_text:
           platform: "windows"
           use_kenlm: "OFF"
@@ -395,7 +416,8 @@ jobs:
       shell: bash.exe
     steps:
       - checkout
-      - install_msvc_build_dependencies
+      - install_msvc_build_dependencies:
+          use_kenlm: << parameters.use_kenlm >>
       - setup_python_virtualenv:
           platform: "windows"
       - install_python_bindings:
