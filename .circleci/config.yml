@@ -29,7 +29,7 @@ commands:
             equal: ["ON", << parameters.use_kenlm >>]
           steps:
             - run:
-                name: "Install KenLM Build Dependencies"
+                name: "Install Build Dependencies (KenLM)"
                 # TODO: remove boost once https://github.com/kpu/kenlm/pull/418 is merged
                 command: |
                   sudo apt -y install cmake libboost-program-options-dev libboost-system-dev libboost-thread-dev \
@@ -47,7 +47,7 @@ commands:
             equal: ["ON", << parameters.use_kenlm >>]
           steps:
             - run:
-                name: "Install KenLM Build Dependencies"
+                name: "Install Build Dependencies (KenLM)"
                 # TODO: remove boost once https://github.com/kpu/kenlm/pull/418 is merged
                 command: brew install cmake boost zlib bzip2 lzip
   install_msvc_build_dependencies:
@@ -64,7 +64,7 @@ commands:
             equal: ["ON", << parameters.use_kenlm >>]
           steps:
             - run:
-                name: "Install KenLM Build Dependencies"
+                name: "Install Build Dependencies (KenLM)"
                 command: choco install cmake -y
             # windows needs a path modification
             - run:
@@ -186,6 +186,10 @@ commands:
         type: string
         default: "ON"
     steps:
+      - run :
+          name: "Install test dependencies"
+          command: |
+            pip install -r bindings/python/test/requirements.txt
       - run:
           name: "Run Python Binding Tests"
           command: |
