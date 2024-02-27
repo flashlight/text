@@ -174,15 +174,14 @@ commands:
       - run:
           name: "Install Python Bindings"
           command: |
-            USE_KENLM=<< parameters.use_kenlm >> pip wheel -v . --no-use-pep517
-            pip install *.whl
+            USE_KENLM=<< parameters.use_kenlm >> pip install -v .
   run_python_tests:
     parameters:
       use_kenlm:
         type: string
         default: "ON"
     steps:
-      - run :
+      - run:
           name: "Install test dependencies"
           command: |
             pip install -r bindings/python/test/requirements.txt
