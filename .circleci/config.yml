@@ -177,7 +177,9 @@ commands:
                   pip install -v git+https://github.com/kpu/kenlm.git
       - run:
           name: "Install Python Bindings"
-          command: USE_KENLM=<< parameters.use_kenlm >> pip install -v .
+          command: |
+            USE_KENLM=<< parameters.use_kenlm >> pip wheel -v .
+            pip install *.whl
   run_python_tests:
     parameters:
       use_kenlm:
