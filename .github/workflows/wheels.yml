@@ -56,7 +56,7 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
-          path: ./dist/*.tar.gz
+          path: dist/*.tar.gz
 
   install_from_sdist:
     name: Install from source distribution
@@ -68,10 +68,10 @@ jobs:
 
       - uses: actions/download-artifact@v3
         with:
-          path: dist
+          name: artifact
 
       - name: Install from sdist
-        run: ls && pip install -v dist/*.tar.gz
+        run: ls && pip install -v artifact/*.tar.gz
 
   upload_pypi:
     needs: [build_wheels, build_sdist]
