@@ -36,9 +36,12 @@ jobs:
           CIBW_BEFORE_BUILD: pip install -v git+https://github.com/kpu/kenlm.git
           CIBW_PRERELEASE_PYTHONS: 0
           CIBW_BUILD_VERBOSITY: 1
+          # TODO: delete me, intended to test GHA faster
+          CIBW_BUILD: cp312-*
       - uses: actions/upload-artifact@v4
         with:
           path: ./wheelhouse/*.whl
+          name: dist-${{ matrix.os }}
 
   build_sdist:
     name: Build source distribution
@@ -57,6 +60,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           path: dist/*.tar.gz
+          name: dist
 
   install_from_sdist:
     needs: [build_sdist]
@@ -69,7 +73,8 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: artifact
+          pattern: dist*
+          merge-multiple: true
           path: dist
 
       - name: Install KenLM
@@ -84,7 +89,8 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: artifact
+          pattern: dist*
+          merge-multiple: true
           path: dist
       - name: Show
         run: ls -l && ls -l dist
@@ -99,7 +105,8 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: artifact
+          pattern: dist*
+          merge-multiple: true
           path: dist
 
       - uses: pypa/gh-action-pypi-publish@v1.8.12
