@@ -75,7 +75,7 @@ jobs:
         run: pip install -v git+https://github.com/kpu/kenlm.git
 
       - name: Install from sdist (with KenLM)
-        run: pip install -v dist/*.tar.gz
+        run: pip install -v dist/artifact/*.tar.gz
 
   upload_pypi:
     needs: [build_wheels, build_sdist]
