@@ -11,7 +11,7 @@ jobs:
         os: [ubuntu-22.04, windows-2022, macOS-12]
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'pull_request'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: actions/setup-python@v4
@@ -36,7 +36,7 @@ jobs:
           CIBW_BEFORE_BUILD: pip install -v git+https://github.com/kpu/kenlm.git
           CIBW_PRERELEASE_PYTHONS: 0
           CIBW_BUILD_VERBOSITY: 1
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: ./wheelhouse/*.whl
 
@@ -44,7 +44,7 @@ jobs:
     name: Build source distribution
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -54,7 +54,7 @@ jobs:
       - name: Build sdist
         run: pipx run build --sdist
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           path: dist/*.tar.gz
 
@@ -63,11 +63,11 @@ jobs:
     name: Install from source distribution
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: artifact
           path: dist
@@ -86,7 +86,7 @@ jobs:
     # in the future: publish on github releases:
     # if: github.event_name == 'release' && github.event.action == 'published'
     steps:
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           # unpacks default artifact into dist/
           # name required to create an extra parent dir
