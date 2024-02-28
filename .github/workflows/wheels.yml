@@ -59,6 +59,7 @@ jobs:
           path: dist/*.tar.gz
 
   install_from_sdist:
+    needs: [build_sdist]
     name: Install from source distribution
     runs-on: ubuntu-latest
     steps:
