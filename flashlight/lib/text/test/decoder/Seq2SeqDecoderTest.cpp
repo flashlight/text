@@ -28,14 +28,14 @@ void logSeq2seqUpdateFuncParams(
     const std::vector<int>& prevStepTokenIdxs,
     const std::vector<EmittingModelStatePtr>& prevStepModelStates,
     const int& timestep) {
-  std::cout << "seq2seq update func called with"
-            << " N = " << N << " T = " << T << " prevStepTokenIdxs {";
+  std::cout << "seq2seq update func called with" << " N = " << N << " T = " << T
+            << " prevStepTokenIdxs {";
   for (int i : prevStepTokenIdxs) {
     std::cout << i << ", ";
   }
-  std::cout << "} "
-            << " prevStepModelStates vec of size " << prevStepModelStates.size()
-            << " timestep = " << timestep << std::endl;
+  std::cout << "} " << " prevStepModelStates vec of size "
+            << prevStepModelStates.size() << " timestep = " << timestep
+            << std::endl;
 }
 
 TEST(Seq2SeqDecoderTest, LexiconFreeBasic) {
