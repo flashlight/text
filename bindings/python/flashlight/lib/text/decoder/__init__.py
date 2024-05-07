@@ -9,7 +9,7 @@ LICENSE file in the root directory of this source tree.
 import textwrap
 import warnings
 
-from ..flashlight_lib_text_decoder import (  # noqa
+from ..flashlight_lib_text_decoder import (  # noqa  # @manual=fbcode//deeplearning/projects/flashlight-text/bindings/python:flashlight_lib_text_decoder
     create_emitting_model_state,
     CriterionType,
     DecodeResult,
