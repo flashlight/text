@@ -35,7 +35,9 @@ if (
 
 
 try:
-    from ..flashlight_lib_text_decoder_kenlm import KenLM  # noqa
+    from ..flashlight_lib_text_decoder_kenlm import (  # @manual=fbcode//deeplearning/projects/flashlight-text/bindings/python:flashlight_lib_text_decoder_kenlm
+        KenLM,
+    )
 except ImportError:
     raise ImportError(
         textwrap.dedent(
