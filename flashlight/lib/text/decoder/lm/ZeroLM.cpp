@@ -7,8 +7,6 @@
 
 #include "flashlight/lib/text/decoder/lm/ZeroLM.h"
 
-#include <stdexcept>
-
 namespace fl {
 namespace lib {
 namespace text {

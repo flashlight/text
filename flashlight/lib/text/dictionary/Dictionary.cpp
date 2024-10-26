@@ -12,7 +12,6 @@
 #include <string>
 
 #include "flashlight/lib/text/String.h"
-#include "flashlight/lib/text/dictionary/Utils.h"
 
 namespace fl {
 namespace lib {

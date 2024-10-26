@@ -7,11 +7,7 @@
 
 #include "flashlight/lib/text/String.h"
 
-#include <sys/types.h>
-
-#include <array>
 #include <cstdlib>
-#include <ctime>
 #include <functional>
 
 static constexpr const char* kSpaceChars = "\t\n\v\f\r ";
