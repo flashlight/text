@@ -17,13 +17,13 @@
 namespace lm {
 namespace base {
 
-struct Vocabulary;
-struct Model;
+class Vocabulary;
+class Model;
 
 } // namespace base
 namespace ngram {
 
-struct State;
+class State;
 
 } // namespace ngram
 } // namespace lm
