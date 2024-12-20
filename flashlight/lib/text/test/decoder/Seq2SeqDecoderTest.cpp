@@ -122,7 +122,8 @@ TEST(Seq2SeqDecoderTest, LexiconFreeBasic) {
           // otherwise, they have the best token score from the prev timestep
           assert(timestep > 1);
           const auto prev = modelScoreMapping[timestep - 1];
-          const auto maxScore = std::max_element(prev.begin(), prev.end());
+          [[maybe_unused]] const auto maxScore =
+              std::max_element(prev.begin(), prev.end());
           assert(p->score == *maxScore);
           assert(p->tokenIdx == (maxScore - prev.begin())); // idx of max val
           assert( // previous index of this hypo in the beam
