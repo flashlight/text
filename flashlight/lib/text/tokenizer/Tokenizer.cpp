@@ -50,7 +50,7 @@ void Tokenizer::countTokens(
         tokenCountMap[token]++;
       }
       if (generateMetaData) {
-        fileMetaData.push_back({reader.getPosition(), tokens.size()});
+        fileMetaData.emplace_back(reader.getPosition(), tokens.size());
       }
       nSentences++;
     }
