@@ -142,6 +142,8 @@ class FL_TEXT_API LexiconDecoder : public Decoder {
 
   void prune(int lookBack = 0) override;
 
+  void rewind(int numFrames);
+
   int nDecodedFramesInBuffer() const override;
 
   DecodeResult getBestHypothesis(int lookBack = 0) const override;
