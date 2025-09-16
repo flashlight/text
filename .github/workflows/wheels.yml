@@ -27,7 +27,7 @@ jobs:
         if: runner.os == 'macOS'
 
       - name: Install cibuildwheel
-        run: python -m pip install cibuildwheel==2.16.5
+        run: python -m pip install cibuildwheel==3.1.4
       - name: Compute version
         run: echo "$(python bindings/python/compute_version.py)" > BUILD_VERSION.txt
       - name: Build wheels
@@ -91,7 +91,7 @@ jobs:
           merge-multiple: true
           path: dist
 
-      - uses: pypa/gh-action-pypi-publish@v1.8.12
+      - uses: pypa/gh-action-pypi-publish@v1.13.0
         with:
           verbose: true
           password: ${{ secrets.PYPI_PASSWORD }}
