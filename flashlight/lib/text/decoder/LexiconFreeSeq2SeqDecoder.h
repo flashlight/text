@@ -27,6 +27,7 @@ struct LexiconFreeSeq2SeqDecoderOptions {
   double lmWeight; // Weight of lm
   double eosScore; // Score for inserting an EOS
   bool logAdd; // If or not use logadd when merging hypothesis
+  int numBeamGroups = 1; // For diverse beam search, number of beam groups to utilize. Defaults to 1 (non-diverse beam search).
 };
 
 /**
@@ -79,7 +80,7 @@ struct LexiconFreeSeq2SeqDecoderState {
   int getWord() const {
     return -1;
   }
-};
+}; 
 
 /**
  * Decoder implements a beam seach decoder that finds the token transcription
@@ -101,12 +102,14 @@ class FL_TEXT_API LexiconFreeSeq2SeqDecoder : public Decoder {
       const LMPtr& lm,
       const int eos,
       EmittingModelUpdateFunc emittingModelUpdateFunc,
-      const int maxOutputLength)
+      const int maxOutputLength,
+      DiversityFunction diversityFunction)
       : opt_(std::move(opt)),
         lm_(lm),
         eos_(eos),
         emittingModelUpdateFunc_(emittingModelUpdateFunc),
-        maxOutputLength_(maxOutputLength) {}
+        maxOutputLength_(maxOutputLength),
+        diversityFunction_(diversityFunction) {}
 
   void decodeStep(const float* emissions, int T, int N) override;
 
@@ -130,6 +133,10 @@ class FL_TEXT_API LexiconFreeSeq2SeqDecoder : public Decoder {
   // states for each hypo in the beam at the current timestep
   std::vector<EmittingModelStatePtr> rawPrevStates_;
   int maxOutputLength_;
+
+  DiversityFunction diversityFunction_;
+
+  std::unordered_set<int> uniqueCandidateTokens_;
 
   std::vector<LexiconFreeSeq2SeqDecoderState> candidates_;
   std::vector<LexiconFreeSeq2SeqDecoderState*> candidatePtrs_;
