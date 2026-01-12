@@ -31,9 +31,9 @@ def get_tagged_version() -> Optional[str]:
         return None
 
     # Must match the version in `version.txt` -- ignores `rc` or other suffixes
-    assert (
-        version.parse(version_from_file).release == version.parse(tag[1:]).release
-    ), f"The version in version.txt ({version_from_file}) does not match the given tag ({tag})"
+    assert version.parse(version_from_file).release == version.parse(tag[1:]).release, (
+        f"The version in version.txt ({version_from_file}) does not match the given tag ({tag})"
+    )
     return tag[1:]
 
 
