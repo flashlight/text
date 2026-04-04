@@ -323,6 +323,15 @@ void LexiconDecoder::prune(int lookBack) {
 
   nPrunedFrames_ = nDecodedFrames_ - lookBack;
 }
+
+void LexiconDecoder::rewind(int numFrames) {
+  int startFrame = std::max(1, nDecodedFrames_ - numFrames);
+  for (int i = startFrame; i <= nDecodedFrames_; i++) {
+    hyp_.erase(i);
+  }
+
+  nDecodedFrames_ = std::max(0, nDecodedFrames_ - numFrames);
+}
 } // namespace text
 } // namespace lib
 } // namespace fl

@@ -363,6 +363,7 @@ PYBIND11_MODULE(flashlight_lib_text_decoder, m) {
       .def("decode_end", &LexiconDecoder::decodeEnd)
       .def("decode", &LexiconDecoder_decode, "emissions"_a, "T"_a, "N"_a)
       .def("prune", &LexiconDecoder::prune, "look_back"_a = 0)
+      .def("rewind", &LexiconDecoder::rewind, "num_frames"_a)
       .def(
           "get_best_hypothesis",
           &LexiconDecoder::getBestHypothesis,
